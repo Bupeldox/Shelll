@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Editor</title>
+</head>
+
+<body>
+    <style>
+        body,
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .fullPage {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .row {
+            display: flex;
+            flex-flow: row-wrap;
+        }
+
+        .col {
+            flex: 1 1 15rem;
+        }
+
+        .contentPadding {
+            padding: 0.5rem 1rem;
+        }
+
+        .contentItemMargin {
+            margin: 0.5rem 0;
+        }
+
+        .dependency {
+            border-radius: 1rem;
+            background-color: #0001;
+            box-shadow: 0.25rem #000;
+        }
+
+        select,
+        button {
+            padding: 0 0.25rem;
+            font-size: 1rem;
+        }
+    </style>
+
+    <div class="row fullPage">
+        <div class="col">
+            <div class="InstanceInfo contentPadding">
+                <h1 class="instanceName">InstanceName</h1>
+                <p class="moduleName">ModuleName</p>
+                <em class="interfaceName">IInterface</em>
+                <p>
+                    Description goes here maybe Description goes here maybe Description goes here maybe Description goes
+                    here maybe
+                </p>
+                <h2>Injections</h2>
+                <div class="injectionContainer">
+                    
+                </div>
+            </div>
+            <div class="appInfo contentPadding">
+                <h1>App Info</h1>
+                <label for="appName">App Name</label>
+                <input type="text" id="appName" value="App Name"><br>
+                <label for="appDesc">Description</label>
+                <textarea id="appDesc">App description</textarea>
+            </div>
+        </div>
+        <div style="flex-basis:1px;flex:0 0 1px; background-color: #000;"></div>
+        <div class="col" style="flex-grow:2;">
+            <div class="contentPadding">
+                <h1>Module Display</h1>
+                <div>
+                    <button>Add Instance</button>
+                    <button>Auto Complete Dependencies</button>
+                </div>
+                <div class="dragAreas">
+                    <div class="dragArea">Delete</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tempates">
+        <div class="injection contentPadding">
+            <input type="hidden" class="injectionId">
+            <p>
+                <b class="t-name">DependencyName</b>
+                <em class="t-interface">IInterface</em>
+            </p>
+            <div class="contentItemMargin row">
+                <select class="dependencyInstance col t-select">
+                    <option value="">Not Selected</option>
+                </select>
+                <button class="dependencyChoose">Choose</button>
+                <button class="dependencyAuto">Auto</button>
+                <button class="dependencyCreate">Create Instance</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="Models.js"></script>
+    <script type="module" src="TemplatedHtml.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
