@@ -99,15 +99,15 @@
                         <small>leave blank for "module name - random number"</small>
                     </div>
                 </div>
-                <p>
-                    Choose a module:
-                </p>
-                <div id="moduleSelect">
-
-
+                <div>
+                    <p>Module</p>
+                    <div class="moduleNameDisplay"></div>
+                    <div class="interfaceNameDisplay"></div>
+                    <button class="changeModuleButton">Change Module</button>
                 </div>
-                <button type="button" id="close" class="createButton">Create</button>
 
+                <button type="button" class="saveButton">Save</button>
+                <button type="button" class="cancelButton">Cancel</button>
             </div>
             <div class="appInfo contentPadding" id="appInfoPanel">
                 <h2>App Info</h2>
@@ -134,7 +134,7 @@
         <div>
             <button type="button" id="close" aria-label="close" class="closeButton">X</button>
             <h2>Choose Module</h2>
-            <div id="moduleSelect">
+            <div id="moduleOptionContainer">
             </div>
             <button type="button" id="close" class="createButton">Choose</button>
         </div>

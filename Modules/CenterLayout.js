@@ -25,7 +25,7 @@ class CenterLayout{
         this.container.appendChild(this.element);
     }
     appendChild(element){
-        if(this.element==element){
+        if(this.element == element){
             return;
         }
         this.elements.push(element);

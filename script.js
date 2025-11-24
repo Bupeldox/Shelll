@@ -160,7 +160,7 @@ class InstanceUI {
         });
     }
     open(){
-        
+
     }
 }
 
@@ -172,60 +172,112 @@ class CreateInstanceUseCase{
         this.sidePanelManager = sidePanelManager;
     }
     execute(){
-        var dummyModule ={
+        /*var dummyModule ={
             name:"dummy",
             dependencies:[]
         };
         var instance = new Instance(dummyModule);
-
-        this.instanceRepo.add(instance);
-        this.instancesUI.update();
-        this.modifyInstanceUI.open(instance);
+        instance.name = "";*/
+        this.modifyInstanceUI.open();
+        this.sidePanelManager.changeToInstance();
     }
 }
 
 class ModuleSelectUI{
-    constructor(){
+    constructor({moduleRepo}){
         this.dialog = document.getElementById("chooseModuleDialog");
+        this.moduleContainer = this.dialog.querySelector("moduleOptionContainer");
+    }
+    _events(){
+        this.dialog.querySelector(".chooseButton").addEventListener("click",()=>{
+            this.save();
+        });
+        this.dialog.querySelector(".closeButton").addEventListener("click",()=>{
+            this.close();
+        });
     }
     setAvailable(modules){
+        if(this.modules.every(m=>modules.some(b=>b.name == m.name))){
+            return;
+        }
         this.modules = modules;
+        this.moduleContainer.innerHTML = "";
+        modules.map(m=>{
+            var item = new TemplatedHtml("moduleSelect");
+            var id = Math.random();
+            item.setText("moduleName",m.name)
+            item.setText("moduleInterface",m.interface?.name??"No Interface");
+            var radio = item.getElement("moduleInstanceRadio");
+            radio.value = m.name;
+            radio.id = id;
+            item.element.setAttribute("for",id);
+        });
     }
-    open(){
+    open(onSet){
+        if(this._isOpen){
+            return;
+        }
+        this._isOpen = true;
+        this.onSet = onSet;
         this.dialog.showModal();
     }
+    save(){
+        var chosenModuleName = this.dialog.querySelector(".moduleInstanceRadio:has(:checked)").value;
+        var module = moduleRepo.getByName(chosenModuleName);
+        this.onSet(module);
+        this.close();
+    }
     close(){
+        this._isOpen = false;
         this.dialog.close();
     }
 }
 
 class ModifyInstanceUI{
-    constructor({moduleRepo,instancesDisplay}){
-
+    constructor({moduleRepo,instancesDisplay, chooseModuleUI}){
+        this.chooseModuleUI = chooseModuleUI;
         this.instanceRepo = instanceRepo;
         this.element = document.getElementById("instanceInfoPanel");
         this.moduleRepo = moduleRepo;
         this.instancesDisplay = instancesDisplay;
-        this.moduleSelectContainer = document.getElementById("moduleSelect");
+        this.selectedModuleDisplay = this.element.querySelector(".moduleNameDisplay");
+        this.selectedModuleInterfaceDisplay = this.element.querySelector(".moduleNameDisplay");
         this._events();
     }
     _events(){
-        this.dialog.querySelector(".createButton").addEventListener("click",()=>{this.create();})
-        this.dialog.querySelector(".closeButton").addEventListener("click",()=>{this.close();})
+        this.element.querySelector(".saveButton").addEventListener("click",()=>{
+            this.save();
+        });
+        this.element.querySelector(".changeModuleButton").addEventListener("click",()=>{
+            this.chooseModuleUI.open((v)=>{this.setModule(v)})
+        });
     }
     open(instance){
-        
-        var modules = this.moduleRepo.getAll();
-        
         if(instance){
             this.instance = instance;
+        }else{
+            this.instance = new Instance();
+            this.instance.module = {name:"not set",Dependency:[]}
         }
+        this._displayInstanceValues();
     }
-    create(){
-        //could move this to usecase.
-        var moduleName = this.dialog.querySelector(".moduleInstanceRadio:checked").value;
-        var module = this.moduleRepo.getByName(moduleName);
+    _displayInstanceValues(){
+        this.element.querySelector(".instanceName").value = this.instance.name;
         
+        this.selectedModuleDisplay.textContent = this.instance.module.name;
+        this.selectedModuleInterfaceDisplay.textCOntent = this.instance.module.interface?.name??"No Interface";
+    }
+    setModule(module){
+        this.instance.module = module;
+    }
+    save(){        
+
+        if(this.instance.module.name=="not set"){
+            //err
+            return;
+        }
+
+
         var instance = this.instance;
         if(!this.instance){
             instance = new Instance(module);
@@ -259,8 +311,9 @@ moduleRepo.loadModule("./Modules/PlayPauseControlUI.js");
 
 moduleRepo.allowAllLoadedCall();
 
+var moduleSelectUI = new ModuleSelectUI({moduleRepo});
 var instancesDisplay = new InstancesDisplayUI(instanceRepo);
-var modifyInstanceUI = new ModifyInstanceUI({instanceRepo,moduleRepo,instancesDisplay});
+var modifyInstanceUI = new ModifyInstanceUI({instanceRepo,moduleRepo,instancesDisplay,chooseModuleUI:moduleSelectUI});
 
 
 var sidePanelManager = new SidePanelManager({
