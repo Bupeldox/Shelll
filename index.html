@@ -51,25 +51,66 @@
             padding: 0 0.25rem;
             font-size: 1rem;
         }
+
+        .roundCorners {
+            border-radius: 1rem;
+        }
+
+        .floating {
+            box-shadow: 0 0 0.5rem 0 #0002
+        }
+
+        dialog {
+            border: none;
+            border-radius: 1rem;
+            min-height: 20rem;
+            min-width: 25rem;
+        }
+
+        label.checkedIndicator {
+            display: block;
+            box-shadow: 0 0 0.25rem 0 #0001;
+        }
+
+        label.checkedIndicator:has(:checked) {
+            box-shadow: 0 0 0.5rem 0 #0002;
+        }
+
+        label.checkedIndicator:hover {
+            box-shadow: 0 0 0.25rem 0 #0002;
+        }
+
+        .py-0 {
+            padding-block: 0;
+        }
     </style>
 
     <div class="row fullPage">
         <div class="col">
-            <div class="InstanceInfo contentPadding">
-                <h1 class="instanceName">InstanceName</h1>
-                <p class="moduleName">ModuleName</p>
-                <em class="interfaceName">IInterface</em>
-                <p>
-                    Description goes here maybe Description goes here maybe Description goes here maybe Description goes
-                    here maybe
-                </p>
-                <h2>Injections</h2>
-                <div class="injectionContainer">
-                    
+            <div class="instanceInfo contentPadding" id="instanceInfoPanel">
+
+                <h2>Instance Info</h2>
+                <div class="contentItemMargin">
+                    <div>
+                        <label>Name</label>
+                        <input type="text" class="instanceName">
+                    </div>
+                    <div>
+                        <small>leave blank for "module name - random number"</small>
+                    </div>
                 </div>
+                <p>
+                    Choose a module:
+                </p>
+                <div id="moduleSelect">
+
+
+                </div>
+                <button type="button" id="close" class="createButton">Create</button>
+
             </div>
-            <div class="appInfo contentPadding">
-                <h1>App Info</h1>
+            <div class="appInfo contentPadding" id="appInfoPanel">
+                <h2>App Info</h2>
                 <label for="appName">App Name</label>
                 <input type="text" id="appName" value="App Name"><br>
                 <label for="appDesc">Description</label>
@@ -79,18 +120,26 @@
         <div style="flex-basis:1px;flex:0 0 1px; background-color: #000;"></div>
         <div class="col" style="flex-grow:2;">
             <div class="contentPadding">
-                <h1>Module Display</h1>
+                <h2>Instances</h2>
                 <div>
-                    <button>Add Instance</button>
+                    <button id="addInstanceButton">Add Instance</button>
                     <button>Auto Complete Dependencies</button>
                 </div>
-                <div class="dragAreas">
-                    <div class="dragArea">Delete</div>
-                </div>
+                <div id="instancesDisplay"></div>
             </div>
         </div>
     </div>
-    <div id="tempates">
+
+    <dialog id="chooseModuleDialog" class="roundCorners floating">
+        <div>
+            <button type="button" id="close" aria-label="close" class="closeButton">X</button>
+            <h2>Choose Module</h2>
+            <div id="moduleSelect">
+            </div>
+            <button type="button" id="close" class="createButton">Choose</button>
+        </div>
+    </dialog>
+    <div id="templates" style="display:none;">
         <div class="injection contentPadding">
             <input type="hidden" class="injectionId">
             <p>
@@ -105,6 +154,20 @@
                 <button class="dependencyAuto">Auto</button>
                 <button class="dependencyCreate">Create Instance</button>
             </div>
+        </div>
+        <label class="moduleSelect roundCorners checkedIndicator contentPadding contentItemMargin py-0" for="toSet">
+            <div class="contentItemMargin row">
+                <div class="col">
+                    <div class="moduleName"></div>
+                    <div class="moduleInterface"></div>
+                </div>
+                <input type="radio" class="moduleInstanceRadio" name="newInstanceModule" value="toSet" id="toSet">
+            </div>
+        </label>
+        <div class="instanceSmallDisplay floating roundCorners contentPadding">
+            <div class="instanceName"></div>
+            <div class="instanceModule"></div>
+            <div class="instanceInterface"></div>
         </div>
     </div>
     <script type="module" src="Models.js"></script>

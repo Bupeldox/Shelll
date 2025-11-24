@@ -1,3 +1,4 @@
+import { Module } from "./Models.js";
 
 export class ModuleRepo {
     constructor() {
@@ -17,7 +18,12 @@ export class ModuleRepo {
                 return;
             }
             
-            this.modules.push(m);
+            var module = new Module();
+            module.name = m.name;
+            module.dependencies = m.Dependencies;
+            module.interface = m.Interface;
+
+            this.modules.push(module);
             
             delete this._notLoaded[src];
             this._onLoad()
@@ -30,6 +36,9 @@ export class ModuleRepo {
     registerOnAllLoaded(func){
         this.onAllLoadedCall.push(func);
         this._onLoad();
+    }
+    getAll(){
+        return this.modules;
     }
     _onLoad(){
         if(!this.allowAllLoadedCall){
@@ -55,5 +64,15 @@ export class InstanceRepo{
     }
     getByInterface(interfaceName){
         return this.app.instances.find(i=>i.module.interface.name == interfaceName);
+    }
+    getAll(){
+        return this.app.instances;
+    }
+    add(instance){
+        if(this.app.instances.find(i=>i.name == instance.name)){
+            return false;
+        }
+        this.app.instances.push(instance);
+        return true;
     }
 }

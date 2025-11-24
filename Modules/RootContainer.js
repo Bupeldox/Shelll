@@ -9,9 +9,9 @@ function RootClass() {
 
 
 export default {
-    Dependencies: { //properties that get set on this at any point
+    Dependencies: [ //properties that get set on this at any point
 
-    },
+    ],
     Interface: {//functions available on this.
         name:"IContainerv0",
         functions:[//functions available on this.

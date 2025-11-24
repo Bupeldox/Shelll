@@ -1,7 +1,10 @@
 export default class TemplatedHtml{
     constructor(templateClassName){
-        var templateElement = document.querySelector("templates ."+templateClassName);
-        this.element = templateElement.cloneNode();
+        var templateElement = document.querySelector("#templates ."+templateClassName);
+        this.element = templateElement.cloneNode(true);
+    }
+    getElement(elClassName){
+        return this.element.querySelector("."+elClassName);
     }
     setText(elClassName,content){
         this.element.querySelector("."+elClassName).textContent = content;
@@ -25,5 +28,8 @@ export default class TemplatedHtml{
     }
     setValue(elClassName,value){
         this.element.querySelector("."+elClassName).value = value;
+    }
+    destroy(){
+        this.element.remove();
     }
 }
