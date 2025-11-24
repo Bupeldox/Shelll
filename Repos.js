@@ -62,6 +62,9 @@ export class InstanceRepo{
     getById(name){
         return this.app.instances.find(i=>i.name == name);
     }
+    getByName(name){
+        return this.app.instances.find(i=>i.name == name);
+    }
     getByInterface(interfaceName){
         return this.app.instances.find(i=>i.module.interface.name == interfaceName);
     }

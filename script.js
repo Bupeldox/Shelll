@@ -15,17 +15,17 @@ class SidePanelManager {
         el.style.display="";
     }
     changeToInstance(){
-        this.show(this.instanceInfoUI);
-        this.hide(this.appInfoUI);
+        this._show(this.instanceInfoUI);
+        this._hide(this.appInfoUI);
     }
     changeToApp(){
-        this.hide(this.instanceInfoUI);
-        this.show(this.appInfoUI);
+        this._hide(this.instanceInfoUI);
+        this._show(this.appInfoUI);
     }
 }
 
 class CreateInstanceForDependencyUseCase {
-    constructor(instaceRepo, moduleRepo, moduleDisplay){
+    constructor({instaceRepo, moduleRepo, moduleDisplay}){
         this.instaceRepo = instaceRepo;
         this.moduleRepo = moduleRepo;
         this.moduleDisplay = moduleDisplay;
@@ -102,7 +102,6 @@ class InjectionUI {
 }
 
 
-
 class InstancesDisplayUI{
     constructor(instanceRepo){
         this.instanceRepo = instanceRepo;
@@ -165,7 +164,7 @@ class InstanceUI {
 }
 
 class CreateInstanceUseCase{
-    constructor({instanceRepo,instancesUI,modifyInstanceUI,sidePanelManager}){
+    constructor({instanceRepo,instancesUI,modifyInstanceUI,sidePanelManager}={}){
         this.instanceRepo = instanceRepo;
         this.instancesUI = instancesUI;
         this.modifyInstanceUI = modifyInstanceUI;
@@ -186,7 +185,9 @@ class CreateInstanceUseCase{
 class ModuleSelectUI{
     constructor({moduleRepo}){
         this.dialog = document.getElementById("chooseModuleDialog");
-        this.moduleContainer = this.dialog.querySelector("moduleOptionContainer");
+        this.moduleContainer = this.dialog.querySelector(".moduleOptionContainer");
+        this.modules = []
+        this._events();
     }
     _events(){
         this.dialog.querySelector(".chooseButton").addEventListener("click",()=>{
@@ -195,9 +196,12 @@ class ModuleSelectUI{
         this.dialog.querySelector(".closeButton").addEventListener("click",()=>{
             this.close();
         });
+        this.dialog.addEventListener("close",()=>{
+            this._onClose();
+        });
     }
-    setAvailable(modules){
-        if(this.modules.every(m=>modules.some(b=>b.name == m.name))){
+    setAvailableModules(modules){
+        if(this.modules.length==modules.length && this.modules.every(m=>modules.some(b=>b.name == m.name))){
             return;
         }
         this.modules = modules;
@@ -211,7 +215,12 @@ class ModuleSelectUI{
             radio.value = m.name;
             radio.id = id;
             item.element.setAttribute("for",id);
+            this.moduleContainer.append(item.element);
         });
+    }
+    _onClose(){
+
+        this._isOpen = false;
     }
     open(onSet){
         if(this._isOpen){
@@ -222,7 +231,7 @@ class ModuleSelectUI{
         this.dialog.showModal();
     }
     save(){
-        var chosenModuleName = this.dialog.querySelector(".moduleInstanceRadio:has(:checked)").value;
+        var chosenModuleName = this.dialog.querySelector(".moduleInstanceRadio:checked").value;
         var module = moduleRepo.getByName(chosenModuleName);
         this.onSet(module);
         this.close();
@@ -234,12 +243,11 @@ class ModuleSelectUI{
 }
 
 class ModifyInstanceUI{
-    constructor({moduleRepo,instancesDisplay, chooseModuleUI}){
+    constructor({moduleRepo, chooseModuleUI,saveInstanceUseCase}){
+        this.saveInstanceUseCase = saveInstanceUseCase;
         this.chooseModuleUI = chooseModuleUI;
-        this.instanceRepo = instanceRepo;
         this.element = document.getElementById("instanceInfoPanel");
         this.moduleRepo = moduleRepo;
-        this.instancesDisplay = instancesDisplay;
         this.selectedModuleDisplay = this.element.querySelector(".moduleNameDisplay");
         this.selectedModuleInterfaceDisplay = this.element.querySelector(".moduleNameDisplay");
         this._events();
@@ -249,6 +257,7 @@ class ModifyInstanceUI{
             this.save();
         });
         this.element.querySelector(".changeModuleButton").addEventListener("click",()=>{
+            this.chooseModuleUI.setAvailableModules(this.moduleRepo.getAll());
             this.chooseModuleUI.open((v)=>{this.setModule(v)})
         });
     }
@@ -256,8 +265,11 @@ class ModifyInstanceUI{
         if(instance){
             this.instance = instance;
         }else{
-            this.instance = new Instance();
-            this.instance.module = {name:"not set",Dependency:[]}
+            var modulePlaceholder = {fakeModule:true,name:"not set",dependencies:[]};
+            this.instance = new Instance(modulePlaceholder);
+            this.instance.name = "";
+            this.instance.isNew = true;
+            
         }
         this._displayInstanceValues();
     }
@@ -269,34 +281,49 @@ class ModifyInstanceUI{
     }
     setModule(module){
         this.instance.module = module;
+        this._displayInstanceValues();
     }
     save(){        
-
-        if(this.instance.module.name=="not set"){
+        //should probs move to thing
+        if(this.instance.module.fakeModule){
             //err
             return;
         }
 
-
         var instance = this.instance;
-        if(!this.instance){
+        if(!this.instance.isNew){
             instance = new Instance(module);
         }
-        var name = this.dialog.querySelector(".instanceName").value
+        var name = this.element.querySelector(".instanceName").value
         if(name){
             instance.name = name;
         }
         else{
-            instance.name = module.name+"-"+Math.random();
+            instance.name = instance.module.name+"-"+Math.random();
         }
 
-        instanceRepo.add(instance);
-        this.instancesDisplay.update();
-    }
-    save(){
+        this.saveInstanceUseCase.execute(instance);
         
     }
 }
+
+
+class SaveInstanceUseCase{
+    constructor({sidePanelManager,instanceRepo,instancesDisplay}){
+        this.sidePanelManager = sidePanelManager;
+        this.instanceRepo = instanceRepo;
+        this.instancesDisplay = instancesDisplay;
+    }
+    execute(instance){
+        if(!this.instanceRepo.getByName(instance.name)){
+            this.instanceRepo.add(instance);   
+        }
+        this.instancesDisplay.update();
+        this.sidePanelManager.changeToApp();
+        
+    }
+}
+
 
 var app = new App();
 var instanceRepo = new InstanceRepo(app);
@@ -309,28 +336,42 @@ moduleRepo.loadModule("./Modules/AudioLoader.js");
 moduleRepo.loadModule("./Modules/AudioController.js");
 moduleRepo.loadModule("./Modules/PlayPauseControlUI.js");
 
-moduleRepo.allowAllLoadedCall();
 
-var moduleSelectUI = new ModuleSelectUI({moduleRepo});
+var saveInstanceUseCase = new SaveInstanceUseCase({
+    instanceRepo
+});
+
+var createInstanceUseCase = new CreateInstanceUseCase({
+    instanceRepo
+});
+
 var instancesDisplay = new InstancesDisplayUI(instanceRepo);
-var modifyInstanceUI = new ModifyInstanceUI({instanceRepo,moduleRepo,instancesDisplay,chooseModuleUI:moduleSelectUI});
-
-
+var moduleSelectUI = new ModuleSelectUI({moduleRepo});
+var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI:moduleSelectUI});
 var sidePanelManager = new SidePanelManager({
     appInfoElement:document.getElementById("appInfoPanel"),
     instanceInfoElement:document.getElementById("instanceInfoPanel")
 });
 
-var createInstanceUseCase = new CreateInstanceUseCase({
-    instanceRepo,
-    instancesUI:instancesDisplay,
-    modifyInstanceUI,
-    sidePanelManager
-});
 
-createInstanceUseCase.execute();
+createInstanceUseCase.instancesUI = instancesDisplay;
+createInstanceUseCase.modifyInstanceUI = modifyInstanceUI;
+createInstanceUseCase.sidePanelManager = sidePanelManager;
+
+saveInstanceUseCase.instancesDisplay = instancesDisplay ;
+saveInstanceUseCase.sidePanelManager = sidePanelManager;
+
+
+
+sidePanelManager.changeToApp();
 
 
 document.getElementById("addInstanceButton").addEventListener("click",()=>{
     createInstanceUseCase.execute();
 })
+
+moduleRepo.registerOnAllLoaded(()=>{
+    createInstanceUseCase.execute();
+});
+
+moduleRepo.allowAllLoadedCall();
