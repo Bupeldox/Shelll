@@ -44,7 +44,7 @@ class InjectionUI {
         container,
         instanceRepo,
         moduleRepo,
-        moduleSelectUi,
+        instanceSelectUI,
         createInstanceForInjectionUseCase
     ){
         this.injection = injection;
@@ -55,52 +55,11 @@ class InjectionUI {
         ui.setValue("injectionId",injection.id);
         this.moduleRepo = moduleRepo;
         this.instanceRepo = instanceRepo;
-        this.moduleSelectUi = moduleSelectUi;
+        this.instanceSelectUI = instanceSelectUI;
         this.createInstanceForInjectionUseCase = createInstanceForInjectionUseCase;
     }
 
-    instanceSelected(instanceId){
-        var instance = this.instanceRepo.getById(instanceId);
-        if(!instance){
-            //err
-
-            return false;
-        }
-        this.injection.instance = instance;
-    }
-
-    choose(){
-        //choose selected instance on right
-        var selectedInstance = this.moduleSelectUi.getSelected();
-        if(!selectedInstance){
-            //display not selected err.
-            return;
-        }
-        this.selectedInstance(selectedInstance.id);
-    }
-
-    auto(){
-        //find only instance with right interface
-        var instances = this.instanceRepo.getByInterface(this.injection.interface);
-        if(!instance){
-            return false;
-        }
-        if(instances.length > 1){
-            //more that one
-            return false;
-        }
-        
-        this.instanceSelected(instances);
-    }
-    
-    createInstance(){
-        //Open UI to choose a module pre-filtered to the interface.
-        //choose module
-        var chosenModule;
-        this.createInstanceForInjectionUseCase.createInstance(this.injection,chosenModule);
-    }
 }
-
 
 class InstancesDisplayUI{
     constructor(instanceRepo){
@@ -132,36 +91,6 @@ class InstancesDisplayUI{
     }
 }
 
-class InstanceUI {
-    constructor(){
-        this.nameElement = document.querySelector(".instanceInfo .instanceName");
-        this.moduleName = document.querySelector(".instanceInfo .moduleName");
-        this.interfaceName = document.querySelector(".instanceInfo .interfaceName");
-        this.injectionContainer = document.querySelector(".instanceInfo .injectionContainer");
-        this.injectionUIs = [];
-    }
-    load(instance){
-        this.injectionUIs.map(i=>i.destroy());
-        
-        //set name
-        //set module
-        //set interface
-        //get dependencies in ui
-
-        this.nameElement.textContent = instance.name;
-        this.moduleName.textContent = instance.module.name;
-        this.interfaceName.textContent = instance.module.interface?.name??"No interface"
-        
-        this.injectionUIs = [];
-        instance.injections.map(i=>{
-            var injectionUI = new InjectionUI(i, this.injectionContainer,this.instanceRepo,this.moduleRepo,this.moduleSelectUi,this.createInstanceForInjectionUseCase)
-            this.injectionUIs.push(injectionUI);
-        });
-    }
-    open(){
-
-    }
-}
 
 class CreateInstanceUseCase{
     constructor({instanceRepo,instancesUI,modifyInstanceUI,sidePanelManager}={}){
@@ -171,16 +100,11 @@ class CreateInstanceUseCase{
         this.sidePanelManager = sidePanelManager;
     }
     execute(){
-        /*var dummyModule ={
-            name:"dummy",
-            dependencies:[]
-        };
-        var instance = new Instance(dummyModule);
-        instance.name = "";*/
         this.modifyInstanceUI.open();
         this.sidePanelManager.changeToInstance();
     }
 }
+
 
 class ModuleSelectUI{
     constructor({moduleRepo}){
@@ -242,6 +166,67 @@ class ModuleSelectUI{
     }
 }
 
+
+class InstanceSelectUI{
+    constructor({instanceRepo}){
+        this.dialog = document.getElementById("chooseInstanceDialog");
+        this.moduleContainer = this.dialog.querySelector(".moduleOptionContainer");
+        this.modules = []
+        this._events();
+    }
+    _events(){
+        this.dialog.querySelector(".chooseButton").addEventListener("click",()=>{
+            this.save();
+        });
+        this.dialog.querySelector(".closeButton").addEventListener("click",()=>{
+            this.close();
+        });
+        this.dialog.addEventListener("close",()=>{
+            this._onClose();
+        });
+    }
+    setAvailableInstances(instances){
+        if(this.modules.length==instances.length && this.modules.every(m=>instances.some(b=>b.name == m.name))){
+            return;
+        }
+        this.modules = instances;
+        this.moduleContainer.innerHTML = "";
+        instances.map(i=>{
+            var item = new TemplatedHtml("moduleSelect");
+            var id = Math.random();
+            item.setText("moduleName",i.name)
+            item.setText("moduleInterface",i.module.name);
+            var radio = item.getElement("moduleInstanceRadio");
+            radio.value = i.name;
+            radio.id = id;
+            item.element.setAttribute("for",id);
+            this.moduleContainer.append(item.element);
+        });
+    }
+    _onClose(){
+        this._isOpen = false;
+    }
+    open(onSet){
+        if(this._isOpen){
+            return;
+        }
+        this._isOpen = true;
+        this.onSet = onSet;
+        this.dialog.showModal();
+    }
+    save(){
+        var chosenModuleName = this.dialog.querySelector(".moduleInstanceRadio:checked").value;
+        var module = moduleRepo.getByName(chosenModuleName);
+        this.onSet(module);
+        this.close();
+    }
+    close(){
+        this._isOpen = false;
+        this.dialog.close();
+    }
+}
+
+
 class ModifyInstanceUI{
     constructor({moduleRepo, chooseModuleUI,saveInstanceUseCase}){
         this.saveInstanceUseCase = saveInstanceUseCase;
@@ -250,6 +235,10 @@ class ModifyInstanceUI{
         this.moduleRepo = moduleRepo;
         this.selectedModuleDisplay = this.element.querySelector(".moduleNameDisplay");
         this.selectedModuleInterfaceDisplay = this.element.querySelector(".moduleNameDisplay");
+
+        this.injectionContainer = document.querySelector(".instanceInfo .injectionContainer");
+        this.injectionUIs = [];
+        
         this._events();
     }
     _events(){
@@ -271,6 +260,7 @@ class ModifyInstanceUI{
             this.instance.isNew = true;
             
         }
+        
         this._displayInstanceValues();
     }
     _displayInstanceValues(){
@@ -280,10 +270,20 @@ class ModifyInstanceUI{
         this.selectedModuleInterfaceDisplay.textCOntent = this.instance.module.interface?.name??"No Interface";
     }
     setModule(module){
+        if(this.instance.module.name != module.name){
+            this.injectionUIs.map(i=>i.destroy());
+        }
+
         this.instance.module = module;
         this._displayInstanceValues();
+        
+        this.injectionUIs = [];
+        instance.injections.map(i=>{
+            var injectionUI = new InjectionUI(i, this.injectionContainer,this.instanceRepo,this.moduleRepo,this.moduleSelectUi,this.createInstanceForInjectionUseCase)
+            this.injectionUIs.push(injectionUI);
+        });
     }
-    save(){        
+    save(){
         //should probs move to thing
         if(this.instance.module.fakeModule){
             //err
@@ -307,7 +307,6 @@ class ModifyInstanceUI{
     }
 }
 
-
 class SaveInstanceUseCase{
     constructor({sidePanelManager,instanceRepo,instancesDisplay}){
         this.sidePanelManager = sidePanelManager;
@@ -316,13 +315,15 @@ class SaveInstanceUseCase{
     }
     execute(instance){
         if(!this.instanceRepo.getByName(instance.name)){
-            this.instanceRepo.add(instance);   
+
+            this.instanceRepo.add(instance); 
         }
         this.instancesDisplay.update();
         this.sidePanelManager.changeToApp();
         
     }
 }
+
 
 
 var app = new App();

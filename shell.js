@@ -1,8 +1,4 @@
 
-
-
-
-
 class ModuleRepoDisplay {
     constructor({ container, graphController }) {
         this.container = container;

@@ -105,6 +105,10 @@
                     <div class="interfaceNameDisplay"></div>
                     <button class="changeModuleButton">Change Module</button>
                 </div>
+                <div>
+                    <p>Dependencies</p>
+                    <div class="injectionContainer"></div>
+                </div>
 
                 <button type="button" class="saveButton">Save</button>
                 <button type="button" class="cancelButton">Cancel</button>
@@ -139,18 +143,24 @@
             <button type="button" id="close" class="chooseButton">Choose</button>
         </div>
     </dialog>
+    <dialog id="chooseInstanceDialog" class="roundCorners floating">
+        <div>
+            <button type="button" id="close" aria-label="close" class="closeButton">X</button>
+            <h2>Choose Module</h2>
+            <div class="moduleOptionContainer">
+            </div>
+            <button type="button" id="close" class="chooseButton">Choose</button>
+        </div>
+    </dialog>
     <div id="templates" style="display:none;">
-        <div class="injection contentPadding">
+        <div class="injection contentPadding floating roundCorners">
             <input type="hidden" class="injectionId">
-            <p>
+            <div>
                 <b class="t-name">DependencyName</b>
                 <em class="t-interface">IInterface</em>
-            </p>
+            </div>
             <div class="contentItemMargin row">
-                <select class="dependencyInstance col t-select">
-                    <option value="">Not Selected</option>
-                </select>
-                <button class="dependencyChoose">Choose</button>
+                <button class="dependencyChoose">Choose Instance</button>
                 <button class="dependencyAuto">Auto</button>
                 <button class="dependencyCreate">Create Instance</button>
             </div>
@@ -169,6 +179,7 @@
             <div class="instanceModule"></div>
             <div class="instanceInterface"></div>
         </div>
+
     </div>
     <script type="module" src="Models.js"></script>
     <script type="module" src="TemplatedHtml.js"></script>
