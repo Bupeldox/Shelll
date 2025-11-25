@@ -84,7 +84,7 @@
             padding-block: 0;
         }
     </style>
-
+    <button id="debugBreak">debug</button>
     <div class="row fullPage">
         <div class="col floating">
             <div class="instanceInfo contentPadding" id="instanceInfoPanel">
@@ -165,8 +165,9 @@
                 <button class="injectionAuto">Auto</button>
                 <button class="injectionCreate">Create Instance</button>
             </div>
-            <div class="contentItemMargin row chosenInstance">
-                
+            <div class="contentItemMargin chosenInstance">
+                <div class="chosenInstanceContainer col"></div>
+                <button class="removeCurrentInstance">Change/Remove</button>
             </div>
         </div>
         <label class="moduleSelect roundCorners checkedIndicator contentPadding contentItemMargin py-0" for="toSet">

@@ -59,8 +59,8 @@ export class InstanceRepo{
     constructor(app){
         this.app = app;
     }
-    getById(name){
-        return this.app.instances.find(i=>i.name == name);
+    getById(id){
+        return this.app.instances.find(i=>i.id == id);
     }
     getByName(name){
         return this.app.instances.find(i=>i.name == name);

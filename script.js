@@ -62,37 +62,45 @@ class InjectionUI {
         ui.getElement("injectionChoose").addEventListener("click",()=>{this._onInjectionChooseButton()});
         ui.getElement("injectionAuto").addEventListener("click",()=>{  this._onInjectionAutoButton()});
         ui.getElement("injectionCreate").addEventListener("click",()=>{this._onInjectionCreateButton()});
+        ui.getElement("removeCurrentInstance").addEventListener("click",()=>{this._onRemoveCurrentInstance()});
         this.ui = ui;
+        this._updateInstanceDisplay();
     }
     destroy(){
         this.ui.element.remove();
     }
     _updateInstanceDisplay(){
         if(this.injection.instance){
-            this.ui.getElement("chosenInstance").display = "";
-            this.ui.getElement("instanceChoosing").display = "hidden";
+            this.ui.getElement("chosenInstance").style.display = "";
+            this.ui.getElement("instanceChoosing").style.display = "none";
             if(!this.instanceUI){
                 this.instanceUI = new SmallInstanceDisplay(this.injection.instance);
+                this.instanceUI.appendTo(this.ui.getElement("chosenInstanceContainer"));
             }else{
                 this.instanceUI.update(this.injection.instance);
             }
         }else{
-            this.ui.getElement("chosenInstance").display = "hidden";
-            this.ui.getElement("instanceChoosing").display = "";
+            this.ui.getElement("chosenInstance").style.display = "none";
+            this.ui.getElement("instanceChoosing").style.display = "";
         }
     }
     _onInjectionChooseButton(){
         this.instanceChooser.registerOnPick((i)=>{this._onInstancePicked(i)});
     }
     _onInstancePicked(instance){
-        this.injection.instance = instance
+        this.injection.instance = instance;
+        this._updateInstanceDisplay();
     }
     _onInjectionAutoButton(){
         
     }
     _onInjectionCreateButton(){
         
-}
+    }
+    _onRemoveCurrentInstance(){
+        this.injection.instance = false;
+        this._updateInstanceDisplay();
+    }
 
 }
 
@@ -109,7 +117,7 @@ class BeginEditInstanceUseCase{
     
 
 class InstanceChooser{
-    constructor(beginEditInstanceUseCase){
+    constructor({beginEditInstanceUseCase}){
         this.beginEditInstanceUseCase = beginEditInstanceUseCase;
         this.instance = false;
         this._onPick = false;
@@ -160,7 +168,7 @@ class InstancesDisplayUI{
 
         instances.map(i=>{
             if(!this.UIMap.has(i)){
-                var item = new SmallInstanceDisplay(i);
+                let item = new SmallInstanceDisplay(i);
                 item.prependTo(this.container);
                 item.element.addEventListener("click",()=>{
                     instanceChooser.pick(i);
@@ -170,7 +178,7 @@ class InstancesDisplayUI{
         });
 
         for(let [key,value] of this.UIMap){
-            if(!instances.some(i=>i.name = key.name)){
+            if(!instances.some(i=>i.name == key.name)){
                 var item = this.UIMap.get(key);
                 item.destroy();
                 this.UIMap.delete(key);
@@ -180,7 +188,7 @@ class InstancesDisplayUI{
 }
 
 
-class CreateInstanceUseCase{
+class BeginCreateInstanceUseCase{
     constructor({instanceRepo,instancesUI,modifyInstanceUI,sidePanelManager}={}){
         this.instanceRepo = instanceRepo;
         this.instancesUI = instancesUI;
@@ -196,7 +204,7 @@ class CreateInstanceUseCase{
 
 
 class ModuleSelectUI{
-    constructor({moduleRepo}){
+    constructor(){
         this.dialog = document.getElementById("chooseModuleDialog");
         this.moduleContainer = this.dialog.querySelector(".moduleOptionContainer");
         this.modules = []
@@ -315,10 +323,20 @@ class InstanceSelectUI{
     }
 }
 
+class CancelModifyInstanceUseCase{
+    constructor(sidePanelManager){
+        this.sidePanelManager = sidePanelManager;
+    }
+    execute(){
+        this.sidePanelManager.changeToApp();
+    }
+
+}
 
 class ModifyInstanceUI{
-    constructor({moduleRepo, chooseModuleUI, saveInstanceUseCase, instanceChooser}){
+    constructor({moduleRepo, chooseModuleUI, saveInstanceUseCase, instanceChooser,cancelModifyInstanceUseCase}){
         this.saveInstanceUseCase = saveInstanceUseCase;
+        this.cancelModifyInstanceUseCase = cancelModifyInstanceUseCase;
         this.chooseModuleUI = chooseModuleUI;
         this.instanceChooser = instanceChooser;
         this.element = document.getElementById("instanceInfoPanel");
@@ -337,6 +355,9 @@ class ModifyInstanceUI{
         });
         this.element.querySelector(".changeModuleButton").addEventListener("click",()=>{
             this.beginChangeModule();
+        });
+        this.element.querySelector(".cancelButton").addEventListener("click",()=>{
+            this.cancel();
         });
     }
     beginChangeModule(){
@@ -376,7 +397,7 @@ class ModifyInstanceUI{
             this.injectionContainer.textContent = "No Dependencies";
             return;
         }
-
+        this.injectionContainer.textContent = "";
         this.instance.injections.map(i=>{
             var injectionUI = new InjectionUI({
                 injection: i, 
@@ -398,19 +419,16 @@ class ModifyInstanceUI{
         }
 
         var instance = this.instance;
-        if(!this.instance.isNew){
-            instance = new Instance(module);
-        }
-        var name = this.element.querySelector(".instanceName").value
-        if(name){
-            instance.name = name;
-        }
-        else{
-            instance.name = instance.module.name+"-"+Math.random();
-        }
+        
+        var name = this.element.querySelector(".instanceName").value;
+        this.instance.name = name;
 
         this.saveInstanceUseCase.execute(instance);
         
+    }
+
+    cancel(){
+        this.cancelModifyInstanceUseCase.execute();
     }
 }
 
@@ -421,6 +439,10 @@ class SaveInstanceUseCase{
         this.instancesDisplay = instancesDisplay;
     }
     execute(instance){
+        if(!instance.name){
+            instance.name = instance.module.name+"-"+Math.random();
+        }
+        delete instance.isNew;
         if(!this.instanceRepo.getByName(instance.name)){
 
             this.instanceRepo.add(instance); 
@@ -434,8 +456,19 @@ class SaveInstanceUseCase{
 
 
 var app = new App();
-var instanceRepo = new InstanceRepo(app);
 var moduleRepo = new ModuleRepo();
+var instanceRepo = new InstanceRepo(app);
+
+
+var saveInstanceUseCase = new SaveInstanceUseCase({
+    instanceRepo
+});
+
+
+
+
+
+
 
 moduleRepo.loadModule("./Modules/HtmlContext.js");
 moduleRepo.loadModule("./Modules/RootContainer.js");
@@ -445,19 +478,18 @@ moduleRepo.loadModule("./Modules/AudioController.js");
 moduleRepo.loadModule("./Modules/PlayPauseControlUI.js");
 
 
-var saveInstanceUseCase = new SaveInstanceUseCase({
+
+var beginCreateInstanceUseCase = new BeginCreateInstanceUseCase({
     instanceRepo
 });
 
-var createInstanceUseCase = new CreateInstanceUseCase({
-    instanceRepo
+var cancelModifyInstanceUseCase = new CancelModifyInstanceUseCase({
 });
-
 
 
 var instancesDisplay = new InstancesDisplayUI({instanceRepo});
-var moduleSelectUI = new ModuleSelectUI({moduleRepo});
-var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI:moduleSelectUI});
+var moduleSelectUI = new ModuleSelectUI();
+var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI:moduleSelectUI,cancelModifyInstanceUseCase});
 var sidePanelManager = new SidePanelManager({
     appInfoElement:document.getElementById("appInfoPanel"),
     instanceInfoElement:document.getElementById("instanceInfoPanel")
@@ -465,13 +497,15 @@ var sidePanelManager = new SidePanelManager({
 
 
 var beginEditInstanceUseCase = new BeginEditInstanceUseCase({modifyInstanceUI,sidePanelManager});
-var instanceChooser = new InstanceChooser(beginEditInstanceUseCase);
+var instanceChooser = new InstanceChooser({beginEditInstanceUseCase,instanceRepo});
 modifyInstanceUI.instanceChooser = instanceChooser;
 instancesDisplay.instanceChooser = instanceChooser;
 
-createInstanceUseCase.instancesUI = instancesDisplay;
-createInstanceUseCase.modifyInstanceUI = modifyInstanceUI;
-createInstanceUseCase.sidePanelManager = sidePanelManager;
+cancelModifyInstanceUseCase.sidePanelManager = sidePanelManager;
+
+beginCreateInstanceUseCase.instancesUI = instancesDisplay;
+beginCreateInstanceUseCase.modifyInstanceUI = modifyInstanceUI;
+beginCreateInstanceUseCase.sidePanelManager = sidePanelManager;
 
 saveInstanceUseCase.instancesDisplay = instancesDisplay ;
 saveInstanceUseCase.sidePanelManager = sidePanelManager;
@@ -482,12 +516,32 @@ sidePanelManager.changeToApp();
 
 
 document.getElementById("addInstanceButton").addEventListener("click",()=>{
-    createInstanceUseCase.execute();
+    beginCreateInstanceUseCase.execute();
 })
 
 moduleRepo.registerOnAllLoaded(()=>{
-    //fade out load screen
-    //createInstanceUseCase.execute();
+    (()=>{
+        let rootMod = moduleRepo.getByName("RootElement");
+        let rootIns = new Instance(rootMod);
+        saveInstanceUseCase.execute(rootIns);
+    })();
+
+    (()=>{
+        let docMod = moduleRepo.getByName("Html Document");
+        let docIns = new Instance(docMod);
+        saveInstanceUseCase.execute(docIns);
+    })();
+
+    beginCreateInstanceUseCase.execute();
+    moduleSelectUI.onSet(moduleRepo.getByName("CenterLayout"));
+    moduleSelectUI.close();
+
+
 });
 
 moduleRepo.allowAllLoadedCall();
+
+var debug = ()=>{
+    debugger;
+}
+document.getElementById("debugBreak").addEventListener("click",debug);
