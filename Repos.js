@@ -66,7 +66,7 @@ export class InstanceRepo{
         return this.app.instances.find(i=>i.name == name);
     }
     getByInterface(interfaceName){
-        return this.app.instances.find(i=>i.module.interface.name == interfaceName);
+        return this.app.instances.filter(i=>i.module.interface.name == interfaceName);
     }
     getAll(){
         return this.app.instances;
