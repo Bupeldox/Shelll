@@ -8,6 +8,9 @@ export class ModuleRepo {
         this._allowAllLoadedCall = false;
         this.onAllLoadedCall = [];
     }
+    getByInterfaceName(interfaceName){
+        return this.modules.filter(i=>i.interface.name == interfaceName);
+    }
     loadModule(src) {
         this._notLoaded[src] = 1;
         import(src).then(m => {
@@ -77,5 +80,16 @@ export class InstanceRepo{
         }
         this.app.instances.push(instance);
         return true;
+    }
+    remove(instanceToRemove){
+        //remove from list and injections.
+        this.app.instances.map(i=>{
+            i.injections = i.injections.map(inj=>{
+                if(inj.instance.id == instanceToRemove.id){
+                    inj.instance = false;
+                }
+            });
+        });
+        this.app.instances = this.app.instances.filter(i=>i.id != instanceToRemove.id);
     }
 }
