@@ -34,7 +34,12 @@ export class Dependency{
 }
 export class Instance{
     constructor(module){
-        this.name = Math.random();
+        this.id = Math.random();
+        this.name;
+        this.injections = [];
+        this.setModule(module);
+    }
+    setModule(module){
         this.module = module;
         this.injections = [];
         module.dependencies.map(d=>{

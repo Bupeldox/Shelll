@@ -107,11 +107,12 @@
                 </div>
                 <div>
                     <p>Dependencies</p>
-                    <div class="injectionContainer"></div>
+                    <div class="injectionContainer contentItemMargin"></div>
                 </div>
-
-                <button type="button" class="saveButton">Save</button>
-                <button type="button" class="cancelButton">Cancel</button>
+                <p>
+                    <button type="button" class="saveButton">Save</button>
+                    <button type="button" class="cancelButton">Cancel</button>
+                </p>
             </div>
             <div class="appInfo contentPadding" id="appInfoPanel">
                 <h2>App Info</h2>
@@ -159,10 +160,13 @@
                 <b class="t-name">DependencyName</b>
                 <em class="t-interface">IInterface</em>
             </div>
-            <div class="contentItemMargin row">
-                <button class="dependencyChoose">Choose Instance</button>
-                <button class="dependencyAuto">Auto</button>
-                <button class="dependencyCreate">Create Instance</button>
+            <div class="contentItemMargin row instanceChoosing">
+                <button class="injectionChoose">Choose Instance</button>
+                <button class="injectionAuto">Auto</button>
+                <button class="injectionCreate">Create Instance</button>
+            </div>
+            <div class="contentItemMargin row chosenInstance">
+                
             </div>
         </div>
         <label class="moduleSelect roundCorners checkedIndicator contentPadding contentItemMargin py-0" for="toSet">
@@ -174,7 +178,7 @@
                 <input type="radio" class="moduleInstanceRadio" name="newInstanceModule" value="toSet" id="toSet">
             </div>
         </label>
-        <div class="instanceSmallDisplay floating roundCorners contentPadding">
+        <div class="instanceSmallDisplay floating roundCorners contentPadding contentItemMargin">
             <div class="instanceName"></div>
             <div class="instanceModule"></div>
             <div class="instanceInterface"></div>

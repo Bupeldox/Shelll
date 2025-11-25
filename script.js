@@ -39,31 +39,119 @@ class CreateInstanceForDependencyUseCase {
 }
 
 class InjectionUI {
-    constructor(
+    constructor({
         injection,
         container,
         instanceRepo,
         moduleRepo,
         instanceSelectUI,
-        createInstanceForInjectionUseCase
-    ){
+        createInstanceForInjectionUseCase,
+        instanceChooser
+    }){
+        this.instanceChooser = instanceChooser;
         this.injection = injection;
         var ui = new TemplatedHtml("injection");
-        container.append(ui);
-        ui.setText("t-name",injection.name);
-        ui.setValue("t-interface",injection.interface?.name??"No interface");
+        container.append(ui.element);
+        ui.setText("t-name",injection.dependency.name);
+        ui.setText("t-interface",injection.dependency.interface?.name??"No interface");
         ui.setValue("injectionId",injection.id);
         this.moduleRepo = moduleRepo;
         this.instanceRepo = instanceRepo;
         this.instanceSelectUI = instanceSelectUI;
         this.createInstanceForInjectionUseCase = createInstanceForInjectionUseCase;
+        ui.getElement("injectionChoose").addEventListener("click",()=>{this._onInjectionChooseButton()});
+        ui.getElement("injectionAuto").addEventListener("click",()=>{  this._onInjectionAutoButton()});
+        ui.getElement("injectionCreate").addEventListener("click",()=>{this._onInjectionCreateButton()});
+        this.ui = ui;
     }
+    destroy(){
+        this.ui.element.remove();
+    }
+    _updateInstanceDisplay(){
+        if(this.injection.instance){
+            this.ui.getElement("chosenInstance").display = "";
+            this.ui.getElement("instanceChoosing").display = "hidden";
+            if(!this.instanceUI){
+                this.instanceUI = new SmallInstanceDisplay(this.injection.instance);
+            }else{
+                this.instanceUI.update(this.injection.instance);
+            }
+        }else{
+            this.ui.getElement("chosenInstance").display = "hidden";
+            this.ui.getElement("instanceChoosing").display = "";
+        }
+    }
+    _onInjectionChooseButton(){
+        this.instanceChooser.registerOnPick((i)=>{this._onInstancePicked(i)});
+    }
+    _onInstancePicked(instance){
+        this.injection.instance = instance
+    }
+    _onInjectionAutoButton(){
+        
+    }
+    _onInjectionCreateButton(){
+        
+}
 
 }
 
+class BeginEditInstanceUseCase{
+    constructor({modifyInstanceUI,sidePanelManager}){
+        this.modifyInstanceUI = modifyInstanceUI
+        this.sidePanelManager = sidePanelManager;
+    }
+    execute(instance){
+        this.modifyInstanceUI.open(instance);
+        this.sidePanelManager.changeToInstance();
+    }
+}
+    
+
+class InstanceChooser{
+    constructor(beginEditInstanceUseCase){
+        this.beginEditInstanceUseCase = beginEditInstanceUseCase;
+        this.instance = false;
+        this._onPick = false;
+    }
+    pick(instance){
+        if(this._onPick){
+            this._onPick(instance);
+            this._onPick = false;
+            return;
+        }
+        this.beginEditInstanceUseCase.execute(instance);
+    }   
+    registerOnPick(func){
+        this._onPick = func;
+    }
+}
+
+class SmallInstanceDisplay{
+    constructor(instance){
+        var item = new TemplatedHtml("instanceSmallDisplay");
+        this.element = item.element;
+        this.item = item;
+        this.update(instance);
+        
+    }
+    update(i){
+        this.item.setText("instanceName",i.name)
+        this.item.setText("instanceModule",i.module.name)
+        this.item.setText("instanceInterface",i.module.interface?.name??"No interface")
+    }
+    appendTo(container){
+        container.append(this.element);
+    }
+    prependTo(container){
+        container.prepend(this.element);
+    }
+}
+
 class InstancesDisplayUI{
-    constructor(instanceRepo){
+    constructor({instanceRepo,instanceChooser}){
         this.instanceRepo = instanceRepo;
+        this.instanceChooser = instanceChooser;
         this.container = document.getElementById("instancesDisplay")
         this.UIMap = new Map();
     }
@@ -72,11 +160,11 @@ class InstancesDisplayUI{
 
         instances.map(i=>{
             if(!this.UIMap.has(i)){
-                var item = new TemplatedHtml("instanceSmallDisplay");
-                item.setText("instanceName",i.name)
-                item.setText("instanceModule",i.module.name)
-                item.setText("instanceInterface",i.module.interface?.name??"No interface")
-                this.container.prepend(item.element);
+                var item = new SmallInstanceDisplay(i);
+                item.prependTo(this.container);
+                item.element.addEventListener("click",()=>{
+                    instanceChooser.pick(i);
+                });
                 this.UIMap.set(i,item);
             }
         });
@@ -102,6 +190,7 @@ class CreateInstanceUseCase{
     execute(){
         this.modifyInstanceUI.open();
         this.sidePanelManager.changeToInstance();
+        this.modifyInstanceUI.beginChangeModule();
     }
 }
 
@@ -228,13 +317,14 @@ class InstanceSelectUI{
 
 
 class ModifyInstanceUI{
-    constructor({moduleRepo, chooseModuleUI,saveInstanceUseCase}){
+    constructor({moduleRepo, chooseModuleUI, saveInstanceUseCase, instanceChooser}){
         this.saveInstanceUseCase = saveInstanceUseCase;
         this.chooseModuleUI = chooseModuleUI;
+        this.instanceChooser = instanceChooser;
         this.element = document.getElementById("instanceInfoPanel");
         this.moduleRepo = moduleRepo;
         this.selectedModuleDisplay = this.element.querySelector(".moduleNameDisplay");
-        this.selectedModuleInterfaceDisplay = this.element.querySelector(".moduleNameDisplay");
+        this.selectedModuleInterfaceDisplay = this.element.querySelector(".interfaceNameDisplay");
 
         this.injectionContainer = document.querySelector(".instanceInfo .injectionContainer");
         this.injectionUIs = [];
@@ -246,9 +336,12 @@ class ModifyInstanceUI{
             this.save();
         });
         this.element.querySelector(".changeModuleButton").addEventListener("click",()=>{
-            this.chooseModuleUI.setAvailableModules(this.moduleRepo.getAll());
-            this.chooseModuleUI.open((v)=>{this.setModule(v)})
+            this.beginChangeModule();
         });
+    }
+    beginChangeModule(){
+        this.chooseModuleUI.setAvailableModules(this.moduleRepo.getAll());
+        this.chooseModuleUI.open((v)=>{this.setModule(v)})
     }
     open(instance){
         if(instance){
@@ -262,24 +355,38 @@ class ModifyInstanceUI{
         }
         
         this._displayInstanceValues();
+        this._updateInjectionUI();
     }
     _displayInstanceValues(){
         this.element.querySelector(".instanceName").value = this.instance.name;
-        
+
         this.selectedModuleDisplay.textContent = this.instance.module.name;
-        this.selectedModuleInterfaceDisplay.textCOntent = this.instance.module.interface?.name??"No Interface";
+        this.selectedModuleInterfaceDisplay.textContent = this.instance.module.interface?.name??"No Interface";
     }
     setModule(module){
-        if(this.instance.module.name != module.name){
-            this.injectionUIs.map(i=>i.destroy());
+        this.instance.setModule(module);
+        this._updateInjectionUI();
+        this._displayInstanceValues();
+    }
+    _updateInjectionUI(){
+        this.injectionUIs.map(i=>i.destroy());
+        this.injectionUIs = [];
+
+        if(!this.instance.injections.length){
+            this.injectionContainer.textContent = "No Dependencies";
+            return;
         }
 
-        this.instance.module = module;
-        this._displayInstanceValues();
-        
-        this.injectionUIs = [];
-        instance.injections.map(i=>{
-            var injectionUI = new InjectionUI(i, this.injectionContainer,this.instanceRepo,this.moduleRepo,this.moduleSelectUi,this.createInstanceForInjectionUseCase)
+        this.instance.injections.map(i=>{
+            var injectionUI = new InjectionUI({
+                injection: i, 
+                container: this.injectionContainer,
+                instanceRepo: this.instanceRepo,
+                moduleRepo: this.moduleRepo,
+                instanceSelectUI: this.moduleSelectUi,
+                createInstanceForInjectionUseCase: this.createInstanceForInjectionUseCase,
+                instanceChooser:this.instanceChooser
+            });
             this.injectionUIs.push(injectionUI);
         });
     }
@@ -346,7 +453,9 @@ var createInstanceUseCase = new CreateInstanceUseCase({
     instanceRepo
 });
 
-var instancesDisplay = new InstancesDisplayUI(instanceRepo);
+
+
+var instancesDisplay = new InstancesDisplayUI({instanceRepo});
 var moduleSelectUI = new ModuleSelectUI({moduleRepo});
 var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI:moduleSelectUI});
 var sidePanelManager = new SidePanelManager({
@@ -354,6 +463,11 @@ var sidePanelManager = new SidePanelManager({
     instanceInfoElement:document.getElementById("instanceInfoPanel")
 });
 
+
+var beginEditInstanceUseCase = new BeginEditInstanceUseCase({modifyInstanceUI,sidePanelManager});
+var instanceChooser = new InstanceChooser(beginEditInstanceUseCase);
+modifyInstanceUI.instanceChooser = instanceChooser;
+instancesDisplay.instanceChooser = instanceChooser;
 
 createInstanceUseCase.instancesUI = instancesDisplay;
 createInstanceUseCase.modifyInstanceUI = modifyInstanceUI;
@@ -372,7 +486,8 @@ document.getElementById("addInstanceButton").addEventListener("click",()=>{
 })
 
 moduleRepo.registerOnAllLoaded(()=>{
-    createInstanceUseCase.execute();
+    //fade out load screen
+    //createInstanceUseCase.execute();
 });
 
 moduleRepo.allowAllLoadedCall();
