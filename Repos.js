@@ -57,39 +57,3 @@ export class ModuleRepo {
         return this.modules.find(i=>i.name == name);
     }
 }
-
-export class InstanceRepo{
-    constructor(app){
-        this.app = app;
-    }
-    getById(id){
-        return this.app.instances.find(i=>i.id == id);
-    }
-    getByName(name){
-        return this.app.instances.find(i=>i.name == name);
-    }
-    getByInterface(interfaceName){
-        return this.app.instances.filter(i=>i.module.interface.name == interfaceName);
-    }
-    getAll(){
-        return this.app.instances;
-    }
-    add(instance){
-        if(this.app.instances.find(i=>i.name == instance.name)){
-            return false;
-        }
-        this.app.instances.push(instance);
-        return true;
-    }
-    remove(instanceToRemove){
-        //remove from list and injections.
-        this.app.instances.map(i=>{
-            i.injections = i.injections.map(inj=>{
-                if(inj.instance.id == instanceToRemove.id){
-                    inj.instance = false;
-                }
-            });
-        });
-        this.app.instances = this.app.instances.filter(i=>i.id != instanceToRemove.id);
-    }
-}

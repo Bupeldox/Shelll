@@ -1,3 +1,4 @@
+import TemplatedHtml from "./TemplatedHtml.js";
 
 
 export class InstanceSelectUI{
@@ -56,5 +57,132 @@ export class InstanceSelectUI{
     close(){
         this._isOpen = false;
         this.dialog.close();
+    }
+}
+
+
+export class ModuleSelectUI{
+    constructor(){
+        this.dialog = document.getElementById("chooseModuleDialog");
+        this.moduleContainer = this.dialog.querySelector(".moduleOptionContainer");
+        this.modules = []
+        this._events();
+    }
+    _events(){
+        this.dialog.querySelector(".chooseButton").addEventListener("click",()=>{
+            this.choose();
+        });
+        this.dialog.querySelector(".closeButton").addEventListener("click",()=>{
+            this.close();
+        });
+        this.dialog.addEventListener("close",()=>{
+            this._onClose();
+        });
+    }
+    setAvailableModules(modules){
+        if(this.modules.length==modules.length && this.modules.every(m=>modules.some(b=>b.name == m.name))){
+            return;
+        }
+        this.modules = modules;
+        this.moduleContainer.innerHTML = "";
+        modules.map(m=>{
+            var item = new TemplatedHtml("moduleSelect");
+            var id = Math.random();
+            item.setText("moduleName",m.name)
+            item.setText("moduleInterface",m.interface?.name??"No Interface");
+            var radio = item.getElement("moduleInstanceRadio");
+            radio.value = m.name;
+            radio.id = id;
+            item.element.setAttribute("for",id);
+            this.moduleContainer.append(item.element);
+        });
+    }
+    _onClose(){
+
+        this._isOpen = false;
+    }
+    open(onSet){
+        if(this._isOpen){
+            return;
+        }
+        this._isOpen = true;
+        this.onSet = onSet;
+        this.dialog.showModal();
+    }
+    choose(){
+        var chosenModuleName = this.dialog.querySelector(".moduleInstanceRadio:checked").value;
+        var module = moduleRepo.getByName(chosenModuleName);
+        this.onSet(module);
+        this.close();
+    }
+    close(){
+        this._isOpen = false;
+        this.dialog.close();
+    }
+}
+
+
+
+
+export class InstanceChooser{
+    constructor({beginEditInstanceUseCase}){
+        this.beginEditInstanceUseCase = beginEditInstanceUseCase;
+        this.instance = false;
+        this._onPick = false;
+    }
+    pick(instance){
+        if(this._onPick){
+            this._onPick(instance);
+            this._onPick = false;
+            return;
+        }
+        this.beginEditInstanceUseCase.execute(instance);
+    }   
+    registerOnPick(func){
+        this._onPick = func;
+    }
+}
+
+
+export class SidePanelManager {
+    constructor({appInfoElement, instanceInfoElement}){
+        this.appInfoUI = appInfoElement;
+        this.instanceInfoUI = instanceInfoElement;
+    }
+    _hide(el){
+        el.style.display="none";
+    }
+    _show(el){
+        el.style.display="";
+    }
+    changeToInstance(){
+        this._show(this.instanceInfoUI);
+        this._hide(this.appInfoUI);
+    }
+    changeToApp(){
+        this._hide(this.instanceInfoUI);
+        this._show(this.appInfoUI);
+    }
+}
+
+
+export class SmallInstanceDisplay{
+    constructor(instance){
+        var item = new TemplatedHtml("instanceSmallDisplay");
+        this.element = item.element;
+        this.item = item;
+        this.update(instance);
+        
+    }
+    update(i){
+        this.item.setText("instanceName",i.name)
+        this.item.setText("instanceModule",i.module.name)
+        this.item.setText("instanceInterface",i.module.interface?.name??"No interface")
+    }
+    appendTo(container){
+        container.append(this.element);
+    }
+    prependTo(container){
+        container.prepend(this.element);
     }
 }
