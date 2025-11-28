@@ -144,42 +144,18 @@ saveInstanceUseCase.sidePanelManager = sidePanelManager;
 
 sidePanelManager.changeToApp();
 
-new FileUploadUI((fileName,content)=>{
-    appController.import(fileName,content);
-})
+new FileUploadUI((fileName,content)=>{ appController.import(fileName,content); });
+
 document.getElementById("export").addEventListener("click",()=>{appController.export();})
 
-document.getElementById("addInstanceButton").addEventListener("click", () => {
-    createInstanceControllerIsh.create();
-})
+document.getElementById("addInstanceButton").addEventListener("click", () => { createInstanceControllerIsh.create(); });
 
-document.getElementById("autoDependency").addEventListener("click", () => {
-    autoDependencyController.all();
-})
-
-
-
-moduleRepo.registerOnAllLoaded(() => {
-    (() => {
-        let rootMod = moduleRepo.getByName("RootElement");
-        createInstanceUseCase.execute(rootMod);
-    })();
-
-    (() => {
-        let docMod = moduleRepo.getByName("Html Document");
-        createInstanceUseCase.execute(docMod);
-    })();
-
-    var instance = createInstanceUseCase.execute(moduleRepo.getByName("CenterLayout"))
-    instancesDisplayUI.update();
-    instanceController.edit(instance);
-
-
-});
+document.getElementById("autoDependency").addEventListener("click", () => { autoDependencyController.all(); });
 
 moduleRepo.allowAllLoadedCall();
 
 var debug = () => {
     debugger;
 }
+
 document.getElementById("debugBreak").addEventListener("click", debug);
