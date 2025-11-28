@@ -90,12 +90,30 @@
         .error{
             color:red;
         }
+
+        textarea{
+            vertical-align: top;
+        }
     </style>
     <button id="debugBreak">debug</button>
     <div class="row fullPage">
         <div class="col floating">
+            <div class="appInfo contentPadding" id="appInfoPanel">
+                <h2>App Info</h2>
+                <p>    
+                    <label for="appName">App Name</label>
+                    <input type="text" id="appName" value="App Name"><br>
+                </p>
+                <p>
+                    <label for="appDesc">Description</label>
+                    <textarea id="appDesc">App description</textarea>
+                </p>
+                <p>
+                    <button id="export">Export</button>
+                    <input type="file" id="import" name="filename">Import</input>
+                </p>
+            </div>
             <div class="instanceInfo contentPadding" id="instanceInfoPanel">
-
                 <h2>Instance Info</h2>
                 <div class="contentItemMargin">
                     <div>
@@ -122,13 +140,6 @@
                     <button type="button" class="deleteButton">Delete Instance</button>
                 </p>
             </div>
-            <div class="appInfo contentPadding" id="appInfoPanel">
-                <h2>App Info</h2>
-                <label for="appName">App Name</label>
-                <input type="text" id="appName" value="App Name"><br>
-                <label for="appDesc">Description</label>
-                <textarea id="appDesc">App description</textarea>
-            </div>
         </div>
         <div style="flex-basis:1px;flex:0 0 1px; background-color: #000;"></div>
         <div class="col" style="flex-grow:2;">
@@ -136,7 +147,7 @@
                 <h2>Instances</h2>
                 <div>
                     <button id="addInstanceButton">Add Instance</button>
-                    <button>Auto Complete Dependencies</button>
+                    <button id="autoDependency">Auto Fill Dependencies</button>
                 </div>
                 <div id="instancesDisplay"></div>
             </div>

@@ -1,4 +1,4 @@
-import { Instance } from "../Models.js";
+import { Instance } from "../Models/Instance.js";
 
 export class CreateInstanceUseCase{
     constructor({saveInstanceUseCase}){

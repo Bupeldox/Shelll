@@ -1,7 +1,13 @@
 export class CreateInstanceControllerIsh {
 
     constructor({
-        instanceController, chooseModuleUI, instancesDisplayUI, getModulesForInterfaceUseCase, getAllModulesUseCase, createInstanceUseCase, setInjectionToInstanceUseCase,
+        instanceController, 
+        chooseModuleUI, 
+        instancesDisplayUI, 
+        getModulesForInterfaceUseCase, 
+        getAllModulesUseCase, 
+        createInstanceUseCase, 
+        setInjectionToInstanceUseCase,
     }) {
         this.instanceController = instanceController;
         this.chooseModuleUI = chooseModuleUI;
@@ -15,7 +21,6 @@ export class CreateInstanceControllerIsh {
         var modules = this.getModulesForInterfaceUseCase.execute(injection.dependency.interface);
         this.chooseModuleUI.setAvailableModules(modules);
         this.chooseModuleUI.open((module) => {
-            debugger;
             var instance = this.createInstanceUseCase.execute(module);
             this.setInjectionToInstanceUseCase.execute(injection, instance);
             this.instancesDisplayUI.update();

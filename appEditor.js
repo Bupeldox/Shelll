@@ -5,8 +5,9 @@ import { DeleteInstanceUseCase } from "./UseCases/DeleteInstanceUseCase.js";
 import { CreateInstanceUseCase } from "./UseCases/CreateInstanceUseCase.js";
 import { GetInstancesForInterfaceUseCase } from "./UseCases/GetInstancesForInterfaceUseCase.js";
 import { GetAllModulesUseCase } from "./UseCases/GetAllModulesUseCase.js";
+import { AutoFillAllInjectionsUseCase } from "./UseCases/AutoFillAllInjectsUseCase.js";
 
-import { App, Dependency, Injection, Instance, Interface, Module} from "./Models.js"
+import { App } from "./Models/App.js";
 import { ModuleRepo } from "./Repos.js";
 
 import { ModuleSelectUI } from "./UI/ModuleSelectUI.js";
@@ -14,69 +15,39 @@ import { InstanceChooser } from "./UI/InstanceChooser.js";
 import { SidePanelManager } from "./UI/SidePanelManager.js";
 import { InstancesDisplayUI } from "./UI/InstancesDisplayUI.js";
 import { CreateInstanceControllerIsh } from "./Controllers/CreateInstanceControllerIsh.js";
-import { InjectionController } from "./Controllers/InjectionController.js";
 import { InstanceController } from "./Controllers/InstanceController.js";
 import { ModifyInstanceUI } from "./UI/ModifyInstanceUI.js";
-import { InjectionUI } from "./UI/InjectionUI.js";
 import { GetAllInstancesUseCase } from "./UseCases/GetAllInstancesUseCase.js";
 import { GetModulesForInterfaceUseCase } from "./UseCases/GetModulesForInterfaceUseCase.js";
-
-
-class InjectUIFactory{
-    constructor({
-        instanceChooser,
-        autoFillInjectionUseCase,
-        createInstanceControllerIsh
-    }){
-        
-        this.autoFillInjectionUseCase = autoFillInjectionUseCase;
-        this.instanceChooser = instanceChooser;
-        this.createInstanceControllerIsh = createInstanceControllerIsh;
-    }
-    createUI(injection,container){
-        var controller = new InjectionController({
-            injection,
-            injectionUI,
-            instanceChooser:this.instanceChooser,
-            autoFillInjectionUseCase:this.autoFillInjectionUseCase,
-            createInstanceControllerIsh: this.createInstanceControllerIsh,
-            instancesDisplayUI
-        });
-
-        var injectionUI = new InjectionUI({
-            injection,//should probs be a viewmodel
-            container,
-            controller
-        });
-
-        controller.injectionUI = injectionUI;
-
-        return injectionUI;
-    }
-}
-
-
-//Definition End
-
-
-
+import { InjectUIFactory } from "./UI/InjectUIFactory.js";
+import { AutoFillInjectWithNewInstanceUseCase } from "./UseCases/AutoFillInjectWithNewInstanceUseCase.js";
+import { AutoDependencyController } from "./Controllers/AutoDependencyController.js";
+import { AppController } from "./Controllers/AppController.js";
+import { ImportAppUseCase } from "./UseCases/ImportAppUseCase.js";
+import { ResetAppUseCase } from "./UseCases/ResetAppUseCase.js";
+import { ExportAppUseCase } from "./UseCases/ExportAppUseCase.js";
+import { JSONDownloader } from "./UI/JSONDownloader.js";
+import { AppUI } from "./UI/AppUI.js";
+import { FileUploadUI } from "./UI/FileUploadUI.js";
 
 //Dependency Injection Start
 
 
 var app = new App();
-var moduleRepo = new ModuleRepo();
+export var moduleRepo = new ModuleRepo();
 
 
-var saveInstanceUseCase = new SaveInstanceUseCase({app});
-var createInstanceUseCase = new CreateInstanceUseCase({saveInstanceUseCase});
-var deleteInstanceUseCase = new DeleteInstanceUseCase({app});
-var autoFillInjectionUseCase = new AutoFillInjectionUseCase({app});
-var setInjectionToInstanceUseCase = new SetInjectionToInstanceUseCase({createInstanceUseCase});
-var getAllModulesUseCase = new GetAllModulesUseCase({moduleRepo});
-var getAllInstancesUseCase  = new GetAllInstancesUseCase({app});
-var getModulesForInterfaceUseCase = new GetModulesForInterfaceUseCase({moduleRepo});
-var deleteInstanceUseCase = new DeleteInstanceUseCase({app});
+var saveInstanceUseCase = new SaveInstanceUseCase({ app });
+var createInstanceUseCase = new CreateInstanceUseCase({ saveInstanceUseCase });
+var deleteInstanceUseCase = new DeleteInstanceUseCase({ app });
+var autoFillInjectionUseCase = new AutoFillInjectionUseCase({ app });
+var setInjectionToInstanceUseCase = new SetInjectionToInstanceUseCase({ createInstanceUseCase });
+var getAllModulesUseCase = new GetAllModulesUseCase({ moduleRepo });
+var getAllInstancesUseCase = new GetAllInstancesUseCase({ app });
+var getModulesForInterfaceUseCase = new GetModulesForInterfaceUseCase({ moduleRepo });
+var deleteInstanceUseCase = new DeleteInstanceUseCase({ app });
+var autoFillInjectWithNewInstanceUseCase = new AutoFillInjectWithNewInstanceUseCase({ moduleRepo, getModulesForInterfaceUseCase, createInstanceUseCase });
+var autoFillAllInjectionsUseCase = new AutoFillAllInjectionsUseCase({ getAllInstancesUseCase, autoFillInjectionUseCase, autoFillInjectWithNewInstanceUseCase });
 
 moduleRepo.loadModule("./Modules/HtmlContext.js");
 moduleRepo.loadModule("./Modules/RootContainer.js");
@@ -87,15 +58,15 @@ moduleRepo.loadModule("./Modules/PlayPauseControlUI.js");
 
 
 var instanceChooser = new InstanceChooser({});
-var instancesDisplayUI = new InstancesDisplayUI({getAllInstancesUseCase ,instanceChooser});
+var instancesDisplayUI = new InstancesDisplayUI({ getAllInstancesUseCase, instanceChooser });
 var chooseModuleUI = new ModuleSelectUI({});
-var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI});
+var modifyInstanceUI = new ModifyInstanceUI({ saveInstanceUseCase, moduleRepo, chooseModuleUI });
 var sidePanelManager = new SidePanelManager({
-    appInfoElement:document.getElementById("appInfoPanel"),
-    instanceInfoElement:document.getElementById("instanceInfoPanel")
+    appInfoElement: document.getElementById("appInfoPanel"),
+    instanceInfoElement: document.getElementById("instanceInfoPanel")
 });
-
-
+var jSONDownloader = new JSONDownloader();
+var appUI = new AppUI({app});
 
 
 
@@ -124,7 +95,29 @@ var createInstanceControllerIsh = new CreateInstanceControllerIsh({
 var injectUIFactory = new InjectUIFactory({
     instanceChooser,
     autoFillInjectionUseCase,
-    createInstanceControllerIsh
+    createInstanceControllerIsh,
+    instancesDisplayUI
+});
+
+var autoDependencyController = new AutoDependencyController({
+    autoFillAllInjectionsUseCase,
+    instancesDisplayUI,
+    sidePanelManager
+})
+
+
+var importAppUseCase = new ImportAppUseCase({createInstanceUseCase,setInjectionToInstanceUseCase,moduleRepo});
+var resetAppUseCase = new ResetAppUseCase({app});
+var exportAppUseCase = new ExportAppUseCase({app});
+
+var appController = new AppController({
+    importAppUseCase,
+    resetAppUseCase,
+    exportAppUseCase,
+    jSONDownloader,
+    instancesDisplayUI,
+    sidePanelManager,
+    appUI
 });
 
 
@@ -138,7 +131,7 @@ createInstanceUseCase.modifyInstanceUI = modifyInstanceUI;
 createInstanceUseCase.sidePanelManager = sidePanelManager;
 createInstanceUseCase.iInstanceController = instanceController;
 
-saveInstanceUseCase.instancesDisplay = instancesDisplayUI ;
+saveInstanceUseCase.instancesDisplay = instancesDisplayUI;
 saveInstanceUseCase.sidePanelManager = sidePanelManager;
 
 
@@ -151,18 +144,28 @@ saveInstanceUseCase.sidePanelManager = sidePanelManager;
 
 sidePanelManager.changeToApp();
 
+new FileUploadUI((fileName,content)=>{
+    appController.import(fileName,content);
+})
+document.getElementById("export").addEventListener("click",()=>{appController.export();})
 
-document.getElementById("addInstanceButton").addEventListener("click",()=>{
+document.getElementById("addInstanceButton").addEventListener("click", () => {
     createInstanceControllerIsh.create();
 })
 
-moduleRepo.registerOnAllLoaded(()=>{
-    (()=>{
+document.getElementById("autoDependency").addEventListener("click", () => {
+    autoDependencyController.all();
+})
+
+
+
+moduleRepo.registerOnAllLoaded(() => {
+    (() => {
         let rootMod = moduleRepo.getByName("RootElement");
         createInstanceUseCase.execute(rootMod);
     })();
 
-    (()=>{
+    (() => {
         let docMod = moduleRepo.getByName("Html Document");
         createInstanceUseCase.execute(docMod);
     })();
@@ -176,7 +179,7 @@ moduleRepo.registerOnAllLoaded(()=>{
 
 moduleRepo.allowAllLoadedCall();
 
-var debug = ()=>{
+var debug = () => {
     debugger;
 }
-document.getElementById("debugBreak").addEventListener("click",debug);
+document.getElementById("debugBreak").addEventListener("click", debug);

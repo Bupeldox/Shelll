@@ -1,4 +1,4 @@
-import { Module } from "./Models.js";
+import { Module } from "./Models/Module.js";
 
 export class ModuleRepo {
     constructor() {

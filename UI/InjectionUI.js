@@ -39,7 +39,7 @@ export class InjectionUI {
         } else {
             this.ui.getElement("chosenInstance").style.display = "none";
             this.ui.getElement("instanceChoosing").style.display = "";
-            if (this.controller.canBeAutoFilled()) {
+            if (this.controller.canBeAutoFilled() == 1) {
                 this.ui.getElement("injectionChoose").style.display = "none";
                 this.ui.getElement("injectionAuto").style.display = "";
             } else {
