@@ -3,7 +3,7 @@ export class AutoFillInjectionUseCase {
         this.app = app;
     }
     _getByInterfaceName(name){
-        return this.app.instances.filter(i=>i.module.interface.name == name)
+        return this.app.instances.filter(i=>i.module.interface && i.module.interface.name == name)
     }
     canBeAutoFilled(injection) {
         var interfaceName = injection.dependency.interface.name;

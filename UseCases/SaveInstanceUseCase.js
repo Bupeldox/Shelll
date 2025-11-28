@@ -18,6 +18,6 @@ export class SaveInstanceUseCase{
         }
     }
     _getInstanceById(id){
-        return this.app.instance.find(i=>i.id == id);
+        return this.app.instances.find(i=>i.id == id);
     }
 }

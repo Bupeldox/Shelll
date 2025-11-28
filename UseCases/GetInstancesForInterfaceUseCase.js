@@ -1,5 +1,5 @@
 
-export class GetInstancesForInterface{
+export class GetInstancesForInterfaceUseCase{
     constructor({app}){
         this.app = app;
     }   

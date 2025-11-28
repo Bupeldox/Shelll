@@ -42,7 +42,7 @@ export class Instance{
     setModule(module){
         this.module = module;
         this.injections = [];
-        module.dependencies.map(d=>{
+        module.dependencies?.map(d=>{
             this.injections.push(new Injection(
                 d,
                 this

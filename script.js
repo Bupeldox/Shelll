@@ -1,14 +1,17 @@
 import { AutoFillInjectionUseCase } from "./UseCases/AutoFillInjectionUseCase.js";
-import { CreateInstanceForInjectionUseCase, SetInjectionToInstanceUseCase } from "./UseCases/SetInjectionToInstanceUseCase.js";
+import { SetInjectionToInstanceUseCase } from "./UseCases/SetInjectionToInstanceUseCase.js";
 import { SaveInstanceUseCase } from "./UseCases/SaveInstanceUseCase.js";
 import { DeleteInstanceUseCase } from "./UseCases/DeleteInstanceUseCase.js";
 import { CreateInstanceUseCase } from "./UseCases/CreateInstanceUseCase.js";
-import { GetInstancesForInterface } from "./UseCases/GetInstancesForInterface.js"
+import { GetInstancesForInterfaceUseCase } from "./UseCases/GetInstancesForInterfaceUseCase.js";
+import { GetAllModulesUseCase } from "./UseCases/GetAllModulesUseCase.js";
 
 import { App, Dependency, Injection, Instance, Interface, Module} from "./Models.js"
 import { ModuleRepo } from "./Repos.js";
 import TemplatedHtml from "./TemplatedHtml.js";
-import { InstanceChooser, ModuleSelectUI, SidePanelManager, SmallInstanceDisplay } from "./UIIDontWantTOMessWIth.js";
+import { InstanceChooser, ModuleSelectUI, SidePanelManager, SmallInstanceDisplay, InstancesDisplayUI } from "./UIIDontWantTOMessWIth.js";
+import { GetAllInstancesUseCase } from "./UseCases/GetAllInstancesUseCase.js";
+import { GetModulesForInterfaceUseCase } from "./UseCases/GetModulesForInterfaceUseCase.js";
 
 
 class InjectionUI {
@@ -63,78 +66,43 @@ class InjectionUI {
 }
 
 
-class InstancesDisplayUI{
-    constructor({getAllInstancesUseCase,instanceChooser}){
-        
-        this.getAllInstancesUseCase = getAllInstancesUseCase;
-        this.instanceChooser = instanceChooser;
-        this.container = document.getElementById("instancesDisplay");
-        this.UIMap = new Map();
-    }
-    update(){
-        var instances = this.getAllInstancesUseCase.execute();
 
-        instances.map(i=>{
-            if(!this.UIMap.has(i)){
-                let item = new SmallInstanceDisplay(i);
-                item.prependTo(this.container);
-                item.element.addEventListener("click",()=>{
-                    instanceChooser.pick(i);
-                });
-                this.UIMap.set(i,item);
-            }
-        });
+class CreateInstanceControllerIsh{
 
-        for(let [key,value] of this.UIMap){
-            if(!instances.some(i=>i.name == key.name)){
-                var item = this.UIMap.get(key);
-                item.destroy();
-                this.UIMap.delete(key);
-            }
-        }
-    }
-}
-
-class CreateInsanceControllerIsh{
-    /**
-     * @constructor
-     * @param {Object} param0
-     * @param {InstanceController} param0.instanceController 
-     * @param {ChooseModuleUI} param0.chooseModuleUI 
-     * @param {GetInstancesForInterfaceUseCase} param0.getInstancesForInterfaceUseCase 
-     * @param {GetAllModulesUseCase} param0.getAllModulesUseCase 
-     * @param {CreateInstanceUseCase} param0.setInjectionToInstanceUseCase 
-     * @param {SetInjectionToInstanceUseCase} param0.setInjectionToInstanceUseCase 
-    */ 
     constructor({
         instanceController,
         chooseModuleUI,
-        getInstancesForInterfaceUseCase,
-        getAllModuelesUseCase,
+        instancesDisplayUI,
+        getModulesForInterfaceUseCase,
+        getAllModulesUseCase,
         createInstanceUseCase,
-        setInjectionToInstanceUseCase
+        setInjectionToInstanceUseCase,
     }){ 
         this.instanceController = instanceController;
         this.chooseModuleUI = chooseModuleUI;
-        this.getInstancesForInterfaceUseCase = getInstancesForInterfaceUseCase;
-        this.getAllModuelesUseCase = getAllModuelesUseCase;
+        this.instancesDisplayUI = instancesDisplayUI;
+        this.getModulesForInterfaceUseCase = getModulesForInterfaceUseCase;
+        this.getAllModulesUseCase = getAllModulesUseCase;
         this.createInstanceUseCase = createInstanceUseCase;
         this.setInjectionToInstanceUseCase = setInjectionToInstanceUseCase;
     }
     createForInjection(injection){
-        var modules = this.getInstancesForInterfaceUseCase.execute(injection.interface);
+        var modules = this.getModulesForInterfaceUseCase.execute(injection.dependency.interface);
         this.chooseModuleUI.setAvailableModules(modules);
         this.chooseModuleUI.open((module)=>{
+            debugger;
             var instance = this.createInstanceUseCase.execute(module);
             this.setInjectionToInstanceUseCase.execute(injection,instance);
+            this.instancesDisplayUI.update();
             this._showEditFor(instance);
         });
     }
     create(){
-        var modules = this.getAllModuelesUseCase.execute();
+        var modules = this.getAllModulesUseCase.execute();
         this.chooseModuleUI.setAvailableModules(modules);
         this.chooseModuleUI.open((module)=>{
             var instance = this.createInstanceUseCase.execute(module);
+            this.instancesDisplayUI.update();
             this._showEditFor(instance);
         });
     }
@@ -142,8 +110,8 @@ class CreateInsanceControllerIsh{
         this.instanceController.edit(instance);
     }
     
-
 }
+
 
 class InjectionController{
 
@@ -154,49 +122,55 @@ class InjectionController{
      * @param {InjectionUI} param0.injectionUI
      * @param {InstanceChooser} param0.instanceChooser
      * @param {AutoFillInjectionUseCase} param0.autoFillInjectionUseCase
-     * @param {CreateInstanceControllerIsh} param0.createInsanceControllerIsh
+     * @param {CreateInstanceControllerIsh} param0.createInstanceControllerIsh
      */
     constructor({
         injection,
         injectionUI,
         instanceChooser,
         autoFillInjectionUseCase,
-        createInsanceControllerIsh
+        createInstanceControllerIsh,
+        instancesDisplayUI,
     }){
         this.injection = injection;
         this.autoFillInjectionUseCase = autoFillInjectionUseCase;
         this.injectionUI = injectionUI;
         this.instanceChooser = instanceChooser;
-        this.createInsanceControllerIsh = createInsanceControllerIsh
+        this.createInstanceControllerIsh = createInstanceControllerIsh
+        this.instancesDisplayUI = instancesDisplayUI;
     }
     chooseInstance(){
         this.instanceChooser.registerOnPick((i)=>{this._onInstancePicked(i)});
+        
     }
     _onInstancePicked(instance){
         this.injection.instance = instance;
         this.injectionUI.updateInstanceDisplay();
+        this.instancesDisplayUI.update();
     }
     autoChooseInject(){
         this.autoFillInjectionUseCase.execute(this.injection);
         this.injectionUI.updateInstanceDisplay();
+        this.instancesDisplayUI.update();
     }
     createInstanceForInject(){
-        this.createInsanceControllerIsh.createForInjection(this.injection);
+        this.createInstanceControllerIsh.createForInjection(this.injection);
     }
     createInstance(){
-        this.createInsanceControllerIsh.createForInjection();
+        this.createInstanceControllerIsh.createForInjection();
     }
     _onModuleSelect(module){
         this.createInstance(module);
         this.instancesDisplayUI.update();
-        this.updateInstanceDisplay();
+        this.injectionUI.updateInstanceDisplay();
     }
     removeInstance(){
         this.injection.instance = false;
-        this.updateInstanceDisplay();
+        this.injectionUI.updateInstanceDisplay();
+        this.instancesDisplayUI.update();
     }
-    canInjectBeAutoFilled(){
-        this.autoFillInjectionUseCase.canBeAutoFilled(this.injection);
+    canBeAutoFilled(){
+        return this.autoFillInjectionUseCase.canBeAutoFilled(this.injection);
     }
 }
 
@@ -208,7 +182,7 @@ class InstanceController{
         deleteInstanceUseCase,
         modifyInstanceUI,
         sidePanelManager,
-        instancesDisplayUI,
+        instancesDisplayUI
     }){
         this.deleteInstanceUseCase = deleteInstanceUseCase;
         this.saveInstanceUseCase = saveInstanceUseCase;
@@ -222,6 +196,11 @@ class InstanceController{
         this.modifyInstanceUI.open(instance);
         this.sidePanelManager.changeToInstance();
     }
+    save(instance){
+        this.saveInstanceUseCase.execute(instance);
+        this.sidePanelManager.changeToApp();
+        this.instancesDisplayUI.update();
+    }
     onInstanceCreated(instance){
         this.modifyInstanceUI.open(instance);
         this.sidePanelManager.changeToInstance();
@@ -234,10 +213,15 @@ class InstanceController{
     }
     deleteInstance(instance){
         this.deleteInstanceUseCase.execute(instance);
+        this.instancesDisplayUI.update();
+        this.sidePanelManager.changeToApp();
     }
     onInstanceRemoved(){
         this.sidePanelManager.changeToApp();
         this.instancesDisplayUI.update();
+    }
+    cancelEdit(){
+        this.sidePanelManager.changeToApp();
     }
 }
 
@@ -246,12 +230,12 @@ class InjectUIFactory{
     constructor({
         instanceChooser,
         autoFillInjectionUseCase,
-        createInsanceControllerIsh
+        createInstanceControllerIsh
     }){
         
         this.autoFillInjectionUseCase = autoFillInjectionUseCase;
         this.instanceChooser = instanceChooser;
-        this.createInsanceControllerIsh = createInsanceControllerIsh;
+        this.createInstanceControllerIsh = createInstanceControllerIsh;
     }
     createUI(injection,container){
         var controller = new InjectionController({
@@ -259,16 +243,19 @@ class InjectUIFactory{
             injectionUI,
             instanceChooser:this.instanceChooser,
             autoFillInjectionUseCase:this.autoFillInjectionUseCase,
-            createInsanceControllerIsh: this.createInsanceControllerIsh
+            createInstanceControllerIsh: this.createInstanceControllerIsh,
+            instancesDisplayUI
         });
-        var ui = new InjectionUI({
+
+        var injectionUI = new InjectionUI({
             injection,//should probs be a viewmodel
             container,
             controller
         });
 
-        controller.injectionUI = ui;
-        return ui;
+        controller.injectionUI = injectionUI;
+
+        return injectionUI;
     }
 }
 
@@ -278,11 +265,13 @@ class ModifyInstanceUI{
         moduleRepo, 
         chooseModuleUI, 
         saveInstanceUseCase, 
-        instanceChooser
+        instanceChooser,
+        controller
     }){
         this.saveInstanceUseCase = saveInstanceUseCase;
         this.chooseModuleUI = chooseModuleUI;
         this.instanceChooser = instanceChooser;
+        this.controller = controller;
         this.element = document.getElementById("instanceInfoPanel");
         this.moduleRepo = moduleRepo;
         this.selectedModuleDisplay = this.element.querySelector(".moduleNameDisplay");
@@ -295,22 +284,15 @@ class ModifyInstanceUI{
     }
     _events(){
         this.element.querySelector(".saveButton").addEventListener("click",()=>{
-            this.save();
+            this.controller.save(this.instance);
         });
-        // this.element.querySelector(".changeModuleButton").addEventListener("click",()=>{
-        //     this.beginChangeModule();
-        // });
         this.element.querySelector(".cancelButton").addEventListener("click",()=>{
-            this.cancel();
+            this.controller.cancelEdit();
         });
-    }
-    // beginChangeModule(modules){
-    //     if(!modules){
-    //         modules = this.moduleRepo.getAll();
-    //     }
-    //     this.chooseModuleUI.setAvailableModules(modules);
-    //     this.chooseModuleUI.open((v)=>{this.setModule(v)})
-    // }
+        this.element.querySelector(".deleteButton").addEventListener("click",()=>{
+            this.controller.deleteInstance(this.instance);
+        });
+    } 
     open(instance){
         if(!instance){
             throw "no instance";
@@ -345,27 +327,23 @@ class ModifyInstanceUI{
             this.injectionUIs.push(injectionUI);
         });
     }
-    save(){
-        //should probs move to thing
-        if(this.instance.module.fakeModule){
-            //err
-            return;
-        }
+    clearErrors(){
 
-        var instance = this.instance;
-
-        var name = this.element.querySelector(".instanceName").value;
-        this.instance.name = name;
-
-        this.saveInstanceUseCase.execute(instance);        
     }
+    showError(err){
 
-    cancel(){
-        this.sidePanelManager.changeToApp();
     }
 }
 
 
+class AppLoader{
+    constructor(){
+
+    }
+    load(appJson){
+        
+    }
+}
 
 
 //Definition End
@@ -382,12 +360,15 @@ var moduleRepo = new ModuleRepo();
 
 
 var saveInstanceUseCase = new SaveInstanceUseCase({app});
-var createInstanceUseCase = new CreateInstanceUseCase({app});
+var createInstanceUseCase = new CreateInstanceUseCase({saveInstanceUseCase});
 var deleteInstanceUseCase = new DeleteInstanceUseCase({app});
 var autoFillInjectionUseCase = new AutoFillInjectionUseCase({app});
-var getInstancesForInterface = new GetInstancesForInterface({app});
 var setInjectionToInstanceUseCase = new SetInjectionToInstanceUseCase({createInstanceUseCase});
-
+var getInstancesForInterfaceUseCase = new GetInstancesForInterfaceUseCase({app});
+var getAllModulesUseCase = new GetAllModulesUseCase({moduleRepo});
+var getAllInstancesUseCase  = new GetAllInstancesUseCase({app});
+var getModulesForInterfaceUseCase = new GetModulesForInterfaceUseCase({moduleRepo});
+var deleteInstanceUseCase = new DeleteInstanceUseCase({app});
 
 moduleRepo.loadModule("./Modules/HtmlContext.js");
 moduleRepo.loadModule("./Modules/RootContainer.js");
@@ -398,9 +379,10 @@ moduleRepo.loadModule("./Modules/PlayPauseControlUI.js");
 
 
 
-var instancesDisplay = new InstancesDisplayUI({});
-var moduleSelectUI = new ModuleSelectUI();
-var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI:moduleSelectUI});
+var instanceChooser = new InstanceChooser({});
+var instancesDisplayUI = new InstancesDisplayUI({getAllInstancesUseCase ,instanceChooser});
+var chooseModuleUI = new ModuleSelectUI({});
+var modifyInstanceUI = new ModifyInstanceUI({saveInstanceUseCase, moduleRepo,chooseModuleUI});
 var sidePanelManager = new SidePanelManager({
     appInfoElement:document.getElementById("appInfoPanel"),
     instanceInfoElement:document.getElementById("instanceInfoPanel")
@@ -408,9 +390,10 @@ var sidePanelManager = new SidePanelManager({
 
 
 
-var instanceChooser = new InstanceChooser({});
+
+
 modifyInstanceUI.instanceChooser = instanceChooser;
-instancesDisplay.instanceChooser = instanceChooser;
+instancesDisplayUI.instanceChooser = instanceChooser;
 
 var instanceController = new InstanceController({
     deleteInstanceUseCase,
@@ -418,27 +401,38 @@ var instanceController = new InstanceController({
     modifyInstanceUI,
     sidePanelManager,
     moduleRepo,
-    instancesDisplayUI:instancesDisplay
+    instancesDisplayUI,
+    saveInstanceUseCase
+});
+
+var createInstanceControllerIsh = new CreateInstanceControllerIsh({
+    chooseModuleUI,
+    instanceController,
+    getModulesForInterfaceUseCase,
+    getAllModulesUseCase,
+    createInstanceUseCase,
+    setInjectionToInstanceUseCase,
+    instancesDisplayUI
 });
 
 var injectUIFactory = new InjectUIFactory({
-    moduleRepo,
     instanceChooser,
     autoFillInjectionUseCase,
-    createInstanceForInjectionUseCase
+    createInstanceControllerIsh
 });
 
 
+instanceChooser.instanceController = instanceController;
 
 modifyInstanceUI.injectUIFactory = injectUIFactory
+modifyInstanceUI.controller = instanceController;
 
-
-createInstanceUseCase.instancesUI = instancesDisplay;
+createInstanceUseCase.instancesUI = instancesDisplayUI;
 createInstanceUseCase.modifyInstanceUI = modifyInstanceUI;
 createInstanceUseCase.sidePanelManager = sidePanelManager;
 createInstanceUseCase.iInstanceController = instanceController;
 
-saveInstanceUseCase.instancesDisplay = instancesDisplay ;
+saveInstanceUseCase.instancesDisplay = instancesDisplayUI ;
 saveInstanceUseCase.sidePanelManager = sidePanelManager;
 
 
@@ -452,25 +446,23 @@ sidePanelManager.changeToApp();
 
 
 document.getElementById("addInstanceButton").addEventListener("click",()=>{
-    createInstanceUseCase.execute();
+    createInstanceControllerIsh.create();
 })
 
 moduleRepo.registerOnAllLoaded(()=>{
     (()=>{
         let rootMod = moduleRepo.getByName("RootElement");
-        let rootIns = new Instance(rootMod);
-        saveInstanceUseCase.execute(rootIns);
+        createInstanceUseCase.execute(rootMod);
     })();
 
     (()=>{
         let docMod = moduleRepo.getByName("Html Document");
-        let docIns = new Instance(docMod);
-        saveInstanceUseCase.execute(docIns);
+        createInstanceUseCase.execute(docMod);
     })();
 
-    createInstanceUseCase.execute();
-    moduleSelectUI.onSet(moduleRepo.getByName("CenterLayout"));
-    moduleSelectUI.close();
+    var instance = createInstanceUseCase.execute(moduleRepo.getByName("CenterLayout"))
+    instancesDisplayUI.update();
+    instanceController.edit(instance);
 
 
 });

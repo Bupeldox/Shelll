@@ -9,5 +9,6 @@ export class CreateInstanceUseCase{
         var instance = new Instance(module);
         instance.name = "";
         this.saveInstanceUseCase.execute(instance);
+        return instance;
     }
 }
