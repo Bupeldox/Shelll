@@ -13,7 +13,9 @@
         html {
             font-size: 16px;
         }
-
+        *{
+            box-sizing: border-box;
+        }
         body {
             margin: 0;
         }
@@ -57,7 +59,7 @@
         }
 
         .floating {
-            box-shadow: 0 0 0.5rem 0 #0002
+            box-shadow: 0 0 0.5rem -0.125rem #00000085
         }
 
         dialog {
@@ -69,15 +71,16 @@
 
         label.checkedIndicator {
             display: block;
-            box-shadow: 0 0 0.25rem 0 #0001;
+            box-shadow: 0 0 0.5rem -0.125rem #00000085;
         }
 
         label.checkedIndicator:has(:checked) {
-            box-shadow: 0 0 0.5rem 0 #0002;
+            box-shadow: 0 0 0.5rem -0.125rem #00000085;
+            border:1px solid #000;
         }
 
         label.checkedIndicator:hover {
-            box-shadow: 0 0 0.25rem 0 #0002;
+            box-shadow: 0 0 0.5rem -0.125rem #00000085;
         }
 
         .py-0 {
@@ -159,7 +162,7 @@
         </div>
     </dialog>
     <div id="templates" style="display:none;">
-        <div class="injection contentPadding floating roundCorners">
+        <div class="injection contentPadding floating roundCorners contentItemMargin">
             <input type="hidden" class="injectionId">
             <div>
                 <b class="t-name">DependencyName</b>
@@ -192,9 +195,7 @@
         </div>
 
     </div>
-    <script type="module" src="Models.js"></script>
-    <script type="module" src="TemplatedHtml.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="appEditor.js"></script>
 </body>
 
 </html>
