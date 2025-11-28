@@ -106,7 +106,7 @@ var autoDependencyController = new AutoDependencyController({
 })
 
 
-var importAppUseCase = new ImportAppUseCase({createInstanceUseCase,setInjectionToInstanceUseCase,moduleRepo});
+var importAppUseCase = new ImportAppUseCase({createInstanceUseCase,setInjectionToInstanceUseCase,moduleRepo,getAllInstancesUseCase});
 var resetAppUseCase = new ResetAppUseCase({app});
 var exportAppUseCase = new ExportAppUseCase({app});
 

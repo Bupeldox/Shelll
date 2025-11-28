@@ -17,8 +17,8 @@ export class AppController {
         this.sidePanelManager = sidePanelManager;
         this.appUI = appUI;
     }
-    load(fileName,content) {
-        if(!fileName.matches(/\.json$/)){
+    import(fileName,content) {
+        if(!fileName,toString().match(/\.json$/)){
             return;//show error
         }
         try{

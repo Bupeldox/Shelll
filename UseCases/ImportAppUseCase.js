@@ -2,8 +2,12 @@
 
 export class ImportAppUseCase {
     constructor({
-        createInstanceUseCase, setInjectionToInstanceUseCase, moduleRepo
+        createInstanceUseCase, 
+        setInjectionToInstanceUseCase, 
+        moduleRepo,
+        getAllInstancesUseCase
     }) {
+        this.getAllInstancesUseCase = getAllInstancesUseCase;
         this.createInstanceUseCase = createInstanceUseCase;
         this.setInjectionToInstanceUseCase = setInjectionToInstanceUseCase;
         this.moduleRepo = moduleRepo;
@@ -12,7 +16,8 @@ export class ImportAppUseCase {
     execute(exportedApp) {
         exportedApp.nodes.map(node => {
             var module = this.moduleRepo.getByName(node.typeName);
-            this.createInstanceUseCase.execute(module);
+            var instance = this.createInstanceUseCase.execute(module);
+            instance.name = node.name;
         });
         exportedApp.edges.map(edge => {
             var instance = this.getAllInstancesUseCase.execute().find(i => i.name == edge.fromName);

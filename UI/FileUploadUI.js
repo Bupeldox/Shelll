@@ -20,13 +20,13 @@ export class FileUploadUI {
 
         let display_file = (e) => {
             console.info('. . got: ', e.target.result.length, e);
-            this._handleContents(e.target.name, e.target.result);
+            this._handleContents(fl_file.name, e.target.result);
         };
 
         let on_reader_load = (fl) => {
             console.info('. file reader load', fl);
-            if (fl.name)
-                return display_file; // a function
+            //if (fl.name)
+            return display_file; // a function
         };
 
         // Closure to capture the file information.

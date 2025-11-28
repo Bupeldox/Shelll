@@ -4,7 +4,7 @@ export class ResetAppUseCase {
         this.app = app;
     }
     execute() {
-        this.app.injects = [];
+        this.app.instances = [];
         this.app.name = "";
         this.app.description = "";
     }
