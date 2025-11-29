@@ -1,4 +1,4 @@
-import { Module } from "./Models/Module.js";
+import { Module } from "./AppEditor/Models/Module.js";
 
 export class ModuleRepo {
     constructor() {
@@ -25,6 +25,7 @@ export class ModuleRepo {
             module.name = m.name;
             module.dependencies = m.Dependencies;
             module.interface = m.Interface;
+            module.module = m.module;
 
             this.modules.push(module);
             

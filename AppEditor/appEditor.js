@@ -8,7 +8,7 @@ import { GetAllModulesUseCase } from "./UseCases/GetAllModulesUseCase.js";
 import { AutoFillAllInjectionsUseCase } from "./UseCases/AutoFillAllInjectsUseCase.js";
 
 import { App } from "./Models/App.js";
-import { ModuleRepo } from "./Repos.js";
+import { ModuleRepo } from "../ModuleRepo.js";
 
 import { ModuleSelectUI } from "./UI/ModuleSelectUI.js";
 import { InstanceChooser } from "./UI/InstanceChooser.js";
@@ -49,12 +49,7 @@ var deleteInstanceUseCase = new DeleteInstanceUseCase({ app });
 var autoFillInjectWithNewInstanceUseCase = new AutoFillInjectWithNewInstanceUseCase({ moduleRepo, getModulesForInterfaceUseCase, createInstanceUseCase });
 var autoFillAllInjectionsUseCase = new AutoFillAllInjectionsUseCase({ getAllInstancesUseCase, autoFillInjectionUseCase, autoFillInjectWithNewInstanceUseCase });
 
-moduleRepo.loadModule("./Modules/HtmlContext.js");
-moduleRepo.loadModule("./Modules/RootContainer.js");
-moduleRepo.loadModule("./Modules/CenterLayout.js");
-moduleRepo.loadModule("./Modules/AudioLoader.js");
-moduleRepo.loadModule("./Modules/AudioController.js");
-moduleRepo.loadModule("./Modules/PlayPauseControlUI.js");
+
 
 
 var instanceChooser = new InstanceChooser({});
@@ -139,6 +134,15 @@ saveInstanceUseCase.sidePanelManager = sidePanelManager;
 //DI end
 
 //Glue Start
+
+
+
+moduleRepo.loadModule("/User/Modules/HtmlContext.js");
+moduleRepo.loadModule("/User/Modules/RootContainer.js");
+moduleRepo.loadModule("/User/Modules/CenterLayout.js");
+moduleRepo.loadModule("/User/Modules/AudioLoader.js");
+moduleRepo.loadModule("/User/Modules/AudioController.js");
+moduleRepo.loadModule("/User/Modules/PlayPauseControlUI.js");
 
 
 
