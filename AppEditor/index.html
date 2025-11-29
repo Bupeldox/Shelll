@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Editor</title>
+</head>
+
+<body>
+    <style>
+        body,
+        html {
+            font-size: 16px;
+        }
+        *{
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+        }
+
+        .fullPage {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .row {
+            display: flex;
+            flex-flow: row-wrap;
+        }
+
+        .col {
+            flex: 1 1 15rem;
+        }
+
+        .contentPadding {
+            padding: 0.5rem 1rem;
+        }
+
+        .contentItemMargin {
+            margin: 0.5rem 0;
+        }
+
+        .dependency {
+            border-radius: 1rem;
+            background-color: #0001;
+            box-shadow: 0.25rem #000;
+        }
+
+        select,
+        button {
+            padding: 0 0.25rem;
+            font-size: 1rem;
+        }
+
+        .roundCorners {
+            border-radius: 1rem;
+        }
+
+        .floating {
+            box-shadow: 0 0 0.5rem -0.125rem #00000085
+        }
+
+        dialog {
+            border: none;
+            border-radius: 1rem;
+            min-height: 20rem;
+            min-width: 25rem;
+        }
+
+        label.checkedIndicator {
+            display: block;
+            box-shadow: 0 0 0.5rem -0.125rem #00000085;
+        }
+
+        label.checkedIndicator:has(:checked) {
+            box-shadow: 0 0 0.5rem -0.125rem #00000085;
+            border:1px solid #000;
+        }
+
+        label.checkedIndicator:hover {
+            box-shadow: 0 0 0.5rem -0.125rem #00000085;
+        }
+
+        .py-0 {
+            padding-block: 0;
+        }
+
+        .error{
+            color:red;
+        }
+
+        textarea{
+            vertical-align: top;
+        }
+    </style>
+    <button id="debugBreak">debug</button>
+    <div class="row fullPage">
+        <div class="col floating">
+            <div class="appInfo contentPadding" id="appInfoPanel">
+                <h2>App Info</h2>
+                <p>    
+                    <label for="appName">App Name</label>
+                    <input type="text" id="appName" value="App Name"><br>
+                </p>
+                <p>
+                    <label for="appDesc">Description</label>
+                    <textarea id="appDesc">App description</textarea>
+                </p>
+                <p>
+                    <button id="export">Export</button>
+                </p>
+                <input type="file" id="import" name="filename"></input>
+            </div>
+            <div class="instanceInfo contentPadding" id="instanceInfoPanel">
+                <h2>Instance Info</h2>
+                <div class="contentItemMargin">
+                    <div>
+                        <label>Name</label>
+                        <input type="text" class="instanceName">
+                    </div>
+                    <div>
+                        <small>leave blank for "module name - random number"</small>
+                    </div>
+                </div>
+                <div>
+                    <p>Module</p>
+                    <div class="moduleNameDisplay"></div>
+                    <div class="interfaceNameDisplay"></div>
+                </div>
+                <div>
+                    <p>Dependencies</p>
+                    <div class="injectionContainer contentItemMargin"></div>
+                </div>
+                <p>
+                    <button type="button" class="saveButton">Save</button>
+                    <button type="button" class="cancelButton">Cancel</button>
+                    <button type="button" class="deleteButton">Delete Instance</button>
+                </p>
+            </div>
+        </div>
+        <div style="flex-basis:1px;flex:0 0 1px; background-color: #000;"></div>
+        <div class="col" style="flex-grow:2;">
+            <div class="contentPadding">
+                <h2>Instances</h2>
+                <div>
+                    <button id="addInstanceButton">Add Instance</button>
+                    <button id="autoDependency">Auto Fill Dependencies</button>
+                </div>
+                <div id="instancesDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="chooseModuleDialog" class="roundCorners floating">
+        <div>
+            <button type="button" id="close" aria-label="close" class="closeButton">X</button>
+            <h2>Choose Module</h2>
+            <div class="moduleOptionContainer">
+            </div>
+            <button type="button" id="close" class="chooseButton">Choose</button>
+        </div>
+    </dialog>
+    <dialog id="chooseInstanceDialog" class="roundCorners floating">
+        <div>
+            <button type="button" id="close" aria-label="close" class="closeButton">X</button>
+            <h2>Choose Module</h2>
+            <div class="moduleOptionContainer">
+            </div>
+            <button type="button" id="close" class="chooseButton">Choose</button>
+        </div>
+    </dialog>
+    <div id="templates" style="display:none;">
+        <div class="injection contentPadding floating roundCorners contentItemMargin">
+            <input type="hidden" class="injectionId">
+            <div>
+                <b class="t-name">DependencyName</b>
+                <em class="t-interface">IInterface</em>
+            </div>
+            <div class="contentItemMargin row instanceChoosing">
+                <button class="injectionChoose">Choose Instance</button>
+                <button class="injectionAuto">Auto</button>
+                <button class="injectionCreate">Create Instance</button>
+            </div>
+            <div class="contentItemMargin chosenInstance">
+                <div class="chosenInstanceContainer col"></div>
+                <button class="removeCurrentInstance">Change/Remove</button>
+            </div>
+        </div>
+        <label class="moduleSelect roundCorners checkedIndicator contentPadding contentItemMargin py-0" for="toSet">
+            <div class="contentItemMargin row">
+                <div class="col">
+                    <div class="moduleName"></div>
+                    <div class="moduleInterface"></div>
+                </div>
+                <input type="radio" class="moduleInstanceRadio" name="newInstanceModule" value="toSet" id="toSet">
+            </div>
+        </label>
+        <div class="instanceSmallDisplay floating roundCorners contentPadding contentItemMargin">
+            <div class="instanceName"></div>
+            <div class="instanceModule"></div>
+            <div class="instanceInterface"></div>
+            <div class="instanceError error"></div>
+        </div>
+
+    </div>
+    <script type="module" src="appEditor.js"></script>
+</body>
+
+</html>
