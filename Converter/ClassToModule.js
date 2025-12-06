@@ -47,16 +47,24 @@ function unExportClass(content){
     return content.replace("export class","class");
 }
 
-if (require.main === module) {
-    const fs = require("node:fs");
-    const path = require("path");
-    var fileDir = process.argv[2];
-    var content = fs.readFileSync(path.resolve(__dirname,fileDir)).toString();
+const fs = require("node:fs");
+const path = require("path");
+
+function classFileToModuleFile(fileDir,destDir){
+    var content = fs.readFileSync(fileDir).toString();
     var moduleDef = generateModuleDefinition(content);
     var moduleUnExported = unExportClass(content);
     var newFileContent = moduleUnExported + "\n\n" + moduleDef;
-    fs.writeFileSync(path.resolve(__dirname,fileDir.replace(".js",".shellmod.js")),newFileContent);
+    fs.writeFileSync(destDir.replace(".js",".shellmod.js"),newFileContent);
+}
+
+if (require.main === module) {
+    var fileDir = process.argv[2];
+    classFileToModuleFile(fileDir,fileDir);
    
 } else {
-    module = {generateModuleDefinition};
+    module = {
+        generateModuleDefinition,
+        classFileToModuleFile
+    };
 }

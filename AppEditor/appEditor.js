@@ -143,7 +143,10 @@ moduleRepo.loadModule("/User/Modules/CenterLayout.js");
 moduleRepo.loadModule("/User/Modules/AudioLoader.js");
 moduleRepo.loadModule("/User/Modules/AudioController.js");
 moduleRepo.loadModule("/User/Modules/PlayPauseControlUI.js");
-
+moduleRepo.loadModule("/User/Modules/CRUDUI.js")
+moduleRepo.loadModule("/User/Modules/AnythingRepo.js")
+moduleRepo.loadModule("/User/Modules/OrdererdListItem.js");
+moduleRepo.loadModule("/User/Modules/OrdererdListItemEnd.js");
 
 
 sidePanelManager.changeToApp();

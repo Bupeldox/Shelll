@@ -38,12 +38,12 @@ class PlayPauseControlUI {
 
 export default {
     Dependencies: [ //properties that get set on this at any point
-        {name:"container",interface:{name:"IContainerv0",functions:[{ name: "appendChild", param: ["String"], returns: null }]}},
-        {name:"playController",interface: {name: "IAudioControllerv0",functions: [    { name: "playPause", param: null, returns: null },]}},
-        {name:"document",interface: {name: "IElementRootv0",functions: [    { name: "createElement", param: ["String"], returns: ["HTMLElement"] }]}}
+        {name:"container",interface:{name:"IContainerV0",functions:[{ name: "appendChild", param: ["String"], returns: null }]}},
+        {name:"playController",interface: {name: "IAudioControllerV0",functions: [    { name: "playPause", param: null, returns: null },]}},
+        {name:"document",interface: {name: "IElementRootV0",functions: [    { name: "createElement", param: ["String"], returns: ["HTMLElement"] }]}}
     ],
     Interface: {//functions available on this.
-        name: "IPlayPauseUIv0",
+        name: "IPlayPauseUIV0",
         functions: [//functions available on this.
             { name: "updatePlaying", param: ["Boolean"], returns: null }
         ]

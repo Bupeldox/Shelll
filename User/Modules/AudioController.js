@@ -57,14 +57,14 @@ export default {
         {
             name: "ui",
             interface: {
-                name: "IPlayPauseUIv0",
+                name: "IPlayPauseUIV0",
                 functions: [{ name: "updatePlaying", param: ["Boolean"], returns: null }]
             }
         },
         {
             name: "document",
             interface: {
-                name: "IElementRootv0",
+                name: "IElementRootV0",
                 functions: [
                     { name: "createElement", param: ["String"], returns: ["HTMLElement"] },
                     { name: "body", prop: true, type: "HTMLElement" }
@@ -73,7 +73,7 @@ export default {
         }
     ],
     Interface: {//functions available on this.
-        name: "IAudioControllerv0",
+        name: "IAudioControllerV0",
         functions: [
             { name: "playPause", param: null, returns: null },
             { name: "load", param: ["String"], returns: null },

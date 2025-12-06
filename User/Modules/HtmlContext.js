@@ -10,7 +10,7 @@ export default {
 
     ],
     Interface: {//functions available on this.
-        name:"IElementRootv0",
+        name:"IElementRootV0",
         functions:[//functions available on this.
             { name: "createElement", param: ["String"], returns: ["HTMLElement"] },
             { name: "body", prop: true, type: "HTMLElement" }

@@ -38,11 +38,11 @@ class CenterLayout{
 
 export default {
     Dependencies: [ //properties that get set on this at any point
-        {name:"container",interface:{name:"IContainerv0",functions:[{ name: "appendChild", param: ["String"], returns: null }]}},
-        {name:"document",interface: {name:"IElementRootv0",functions:[{ name: "createElement", param: ["String"], returns: ["HTMLElement"] }]}}
+        {name:"container",interface:{name:"IContainerV0",functions:[{ name: "appendChild", param: ["String"], returns: null }]}},
+        {name:"document",interface: {name:"IElementRootV0",functions:[{ name: "createElement", param: ["String"], returns: ["HTMLElement"] }]}}
     ],
     Interface: {//functions available on this.
-        name:"IContainerv0",
+        name:"IContainerV0",
         functions:[//functions available on this.
            { name: "appendChild", param: ["HTMLElement"], returns: null }
         ]

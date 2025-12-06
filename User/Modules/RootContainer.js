@@ -13,7 +13,7 @@ export default {
 
     ],
     Interface: {//functions available on this.
-        name:"IContainerv0",
+        name:"IContainerV0",
         functions:[//functions available on this.
            { name: "appendChild", param: ["HTMLElement"], returns: null }
         ]
