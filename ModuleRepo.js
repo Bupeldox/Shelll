@@ -1,6 +1,6 @@
 import { Module } from "./AppEditor/Models/Module.js";
 
-export class ModuleRepo {
+class ModuleRepo {
     constructor() {
         this.modules = [];
         
@@ -58,3 +58,14 @@ export class ModuleRepo {
         return this.modules.find(i=>i.name == name);
     }
 }
+
+export const moduleRepo = new ModuleRepo();
+
+fetch("/inDir/Modules").then(r=>r.json()).then(dirs=>{
+    dirs.map(fileName=>{
+        var url = "/User/Modules/"+fileName
+        moduleRepo.loadModule(url);
+    });
+    moduleRepo.allowAllLoadedCall();
+});
+

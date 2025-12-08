@@ -6,6 +6,7 @@ import hashlib
 import base64
 import time
 
+import json
 import ctypes
 import select
 import fcntl
@@ -15,6 +16,7 @@ import mimetypes
 
 
 WEBSOCKET_PATH = "/websocket"
+GET_IN_DIR_PATH = "inDir"
 MAX_REQUEST_LENGTH = 8*1024
 WEBSOCKET_MAGIC_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
@@ -202,6 +204,9 @@ class Server:
         if path == WEBSOCKET_PATH:
             headers = self.headers_str_to_map(raw_headers)
             self.websocket_init_and_process(client_socket, headers)
+        elif path.split("/")[1] == GET_IN_DIR_PATH:
+            dir = path.split("/")[2];
+            self.process_getFilesInDirRequest(client_socket, dir)
         else:
             file_path = self.get_file_path(path)
             self.process_file_request(client_socket, file_path)
@@ -221,7 +226,16 @@ class Server:
         file_path = path[1:]
         if path == '/':
             file_path = 'index.html'
-        return file_path
+        return file_path.split("?")[0]
+    
+    def process_getFilesInDirRequest(self, client_socket, dir):
+        directoryToCheck = "./User/"+dir
+        print(directoryToCheck)
+        dir = os.listdir(directoryToCheck)
+        jsonString = json.dumps(dir)
+        print(jsonString)
+        self.send_response(client_socket, 200, 'OK', "application/json", jsonString.encode("utf8"))
+
 
 def signal_handler(sig, frame):
     os._exit(1)

@@ -1,0 +1,119 @@
+{
+  "nodes": [
+    {
+      "name": "ConfirmDeleteUI-0.2798742694285856",
+      "typeName": "ConfirmDeleteUI"
+    },
+    {
+      "name": "CruddableController-0.2101868034905503",
+      "typeName": "CruddableController"
+    },
+    {
+      "name": "Html Document-0.24649531513012224",
+      "typeName": "Html Document"
+    },
+    {
+      "name": "ToDoItemEditorUI-0.5644949837365125",
+      "typeName": "ToDoItemEditorUI"
+    },
+    {
+      "name": "CRUDUI-0.976752741008933",
+      "typeName": "CRUDUI"
+    },
+    {
+      "name": "ToDoItemService-0.4273012222522029",
+      "typeName": "ToDoItemService"
+    },
+    {
+      "name": "AnythingRepo-0.5771518691288072",
+      "typeName": "AnythingRepo"
+    },
+    {
+      "name": "RootElement-0.22354896113215772",
+      "typeName": "RootElement"
+    },
+    {
+      "name": "ReadInitiator-0.41902615263332876",
+      "typeName": "ReadInitiator"
+    }
+  ],
+  "edges": [
+    {
+      "fromName": "ConfirmDeleteUI-0.2798742694285856",
+      "toName": "CruddableController-0.2101868034905503",
+      "fromProperty": "cruddable"
+    },
+    {
+      "fromName": "ConfirmDeleteUI-0.2798742694285856",
+      "toName": "Html Document-0.24649531513012224",
+      "fromProperty": "document"
+    },
+    {
+      "fromName": "ConfirmDeleteUI-0.2798742694285856",
+      "toName": "RootElement-0.22354896113215772",
+      "fromProperty": "container"
+    },
+    {
+      "fromName": "CruddableController-0.2101868034905503",
+      "toName": "ToDoItemEditorUI-0.5644949837365125",
+      "fromProperty": "editUI"
+    },
+    {
+      "fromName": "CruddableController-0.2101868034905503",
+      "toName": "ConfirmDeleteUI-0.2798742694285856",
+      "fromProperty": "deleteUI"
+    },
+    {
+      "fromName": "CruddableController-0.2101868034905503",
+      "toName": "CRUDUI-0.976752741008933",
+      "fromProperty": "listUI"
+    },
+    {
+      "fromName": "CruddableController-0.2101868034905503",
+      "toName": "ToDoItemService-0.4273012222522029",
+      "fromProperty": "service"
+    },
+    {
+      "fromName": "ToDoItemEditorUI-0.5644949837365125",
+      "toName": "CruddableController-0.2101868034905503",
+      "fromProperty": "cruddable"
+    },
+    {
+      "fromName": "ToDoItemEditorUI-0.5644949837365125",
+      "toName": "Html Document-0.24649531513012224",
+      "fromProperty": "document"
+    },
+    {
+      "fromName": "ToDoItemEditorUI-0.5644949837365125",
+      "toName": "RootElement-0.22354896113215772",
+      "fromProperty": "container"
+    },
+    {
+      "fromName": "CRUDUI-0.976752741008933",
+      "toName": "CruddableController-0.2101868034905503",
+      "fromProperty": "cruddable"
+    },
+    {
+      "fromName": "CRUDUI-0.976752741008933",
+      "toName": "Html Document-0.24649531513012224",
+      "fromProperty": "document"
+    },
+    {
+      "fromName": "CRUDUI-0.976752741008933",
+      "toName": "RootElement-0.22354896113215772",
+      "fromProperty": "container"
+    },
+    {
+      "fromName": "ToDoItemService-0.4273012222522029",
+      "toName": "AnythingRepo-0.5771518691288072",
+      "fromProperty": "repo"
+    },
+    {
+      "fromName": "ReadInitiator-0.41902615263332876",
+      "toName": "CruddableController-0.2101868034905503",
+      "fromProperty": "readable"
+    }
+  ],
+  "name": "ToDoList",
+  "description": "omg it might work"
+}

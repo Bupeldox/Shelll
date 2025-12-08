@@ -1,10 +1,78 @@
 <style>
-    a{
-        display:block;
-        padding:0.25rem 0.5rem;
+    .appConfig {
+        display: block;
+        padding: 0.25rem 0.5rem;
     }
 </style>
-<div style="height:70vh; display: flex; justify-content: center;align-items: center;">
-    <a href="AppRunner/shell.html">Runner</a>
-    <a href="AppEditor/index.html">Editor</a>
+    <div>
+        <a href="AppEditor/index.html">New App / Editor</a>
+    </div>
+
+    <div id="appsList">
+
+    </div>
+
+    <div id="templates" style="display:none;">
+        <div class="appConfig">
+            <span class="name"></span>
+            <a class="edit">Edit</a>
+            <a class="run">Run</a>
+     </div>
+    </div>
+    <script>
+        class TemplatedHtml {
+            constructor(templateClassName) {
+                var templateElement = document.querySelector("#templates ." + templateClassName);
+                this.element = templateElement.cloneNode(true);
+            }
+            getElement(elClassName) {
+                return this.element.querySelector("." + elClassName);
+            }
+            setText(elClassName, content) {
+                this.element.querySelector("." + elClassName).textContent = content;
+            }
+            setSelectListOptions(elClassName, values, selected) {
+                var selectList = this.element.querySelector("." + elClassName);
+                selectList.innerHTML = "";
+                values.map(v => {
+                    var optionElement = document.createElement("option");
+                    if (v.hasOwnProperty("text")) {
+                        optionElement.textContent = v.text;
+                        optionElement.value = v.value;
+                    } else {
+                        optionElement.textContent = v;
+                        optionElement.value = v;
+                    }
+                    if (optionElement.value == selected) {
+                        optionElement.selected = "true";
+                    }
+                });
+            }
+            setValue(elClassName, value) {
+                this.element.querySelector("." + elClassName).value = value;
+            }
+            destroy() {
+                this.element.remove();
+            }
+        }
+
+        document.addEventListener("readystatechange", () => {
+            if(document.readyState != "complete"){
+                return;
+            }
+            fetch("/inDir/AppConfigs").then(r => r.json()).then(dirs => {
+                dirs.map(fileName => {
+                    var el = new TemplatedHtml("appConfig");
+
+                    el.setText("name", fileName);
+                    el.getElement("edit").href = "AppEditor/index.html?o=" + fileName;
+                    el.getElement("run").href = "AppRunner/shell.html?o=" + fileName;
+
+                    document.getElementById("appsList").append(el.element);
+                });
+
+            });
+        })
+
+    </script>
 </div>

@@ -1,10 +1,10 @@
 
 class CRUDUI {
-    constructor({cruddable,document,container}) {
+    constructor({cruddable, document, container}) {
         this.items = [];
         this.cruddable = cruddable;
         this.document = document;
-        this.container = container; 
+        this.container = container;
     }
     display(items){
         this._createContainer();
@@ -17,47 +17,45 @@ class CRUDUI {
             return;
         }
 
-        var html = `
-        <div>
-            <button class="createButton">Create</button>
-            <div class="itemsContainer">
-            
-            </div>
-        </div>
-        `
+        var html = `<div>
+    <button class="createButton">Create</button>
+    <div class="itemsContainer">
+    
+    </div>
+</div>`
         var container = this.document.createElement("div");
-        container.outerHTML = html;
-        var createButton = container.querySelect(".createButton");
-        createButton.addEventListener("click",()=>{this.cruddable.create()});
-        this.itemsContainer = container.querySelect(".itemsContainer");
+        container.innerHTML = html;
+        var createButton = container.querySelector(".createButton");
+        createButton.addEventListener("click",()=>{this.cruddable.beginCreate()});
+        this.itemsContainer = container.querySelector(".itemsContainer");
         this.container.append(container);
     }
     _createElement(item,id){
-        var html = `
-        <div>
-            <div class="textContainer"></div>
-            <div>
-                <button class="editButton">Edit</button>
-                <button class="deleteButton">Delete</button>
-            </div>
-        </div>
-        `;
+        var html = `<div>
+    <div class="textContainer"></div>
+    <div>
+        <button class="editButton">Edit</button>
+        <button class="deleteButton">Delete</button>
+    </div>
+</div>`;
         var container = this.document.createElement("div");
-        container.outerHTML = html;
-        var textContainer = container.querySelect(".textContainer");
-        var editButton = container.querySelect(".editButton");
-        var deleteButton = container.querySelect(".deleteButton");
+        container.innerHTML = html;
+        var textContainer = container.querySelector(".textContainer");
+        var editButton = container.querySelector(".editButton");
+        var deleteButton = container.querySelector(".deleteButton");
 
-        textContainer.textContent = item.text;
+        textContainer.textContent = item.name;
 
         editButton.addEventListener("click",()=>{this._onEditItem(id)});
-        deleteButton.addEventListener("click",()=>{this._onDeleteItem(id)})
+        deleteButton.addEventListener("click",()=>{this._onDeleteItem(id)});
+
+        this.itemsContainer.appendChild(container);
     }
     _onEditItem(id){
-        this.cruddable.update(this.items[id]);
+        this.cruddable.beginUpdate(this.items[id]);
     }
     _onDeleteItem(id){
-        this.cruddable.delete(this.items[id]);
+        this.cruddable.beginDelete(this.items[id]);
     }
 }
 
@@ -81,7 +79,7 @@ export default {
     ],
     module: CRUDUI,
     Interface: {
-        name:"IListDisplayV0",
+        name:"IListUIV0",
         functions:[
             {name:"display", params:"[{text:string,item:any}]"}
         ]

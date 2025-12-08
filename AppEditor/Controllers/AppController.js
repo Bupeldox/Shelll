@@ -17,7 +17,7 @@ export class AppController {
         this.sidePanelManager = sidePanelManager;
         this.appUI = appUI;
     }
-    import(fileName,content) {
+    import(fileName,content,showOverwriteMessage =true) {
         if(!fileName,toString().match(/\.json$/)){
             return;//show error
         }
@@ -28,7 +28,7 @@ export class AppController {
             return;//show error
         }
         //should probs prompt it will overwrite everythin
-        if(!confirm("this will overwrite, that ok?")){
+        if(showOverwriteMessage && !confirm("this will overwrite, that ok?")){
             return;
         }
         this.resetAppUseCase.execute();

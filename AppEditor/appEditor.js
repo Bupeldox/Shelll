@@ -8,7 +8,7 @@ import { GetAllModulesUseCase } from "./UseCases/GetAllModulesUseCase.js";
 import { AutoFillAllInjectionsUseCase } from "./UseCases/AutoFillAllInjectsUseCase.js";
 
 import { App } from "./Models/App.js";
-import { ModuleRepo } from "../ModuleRepo.js";
+import { moduleRepo } from "../ModuleRepo.js";
 
 import { ModuleSelectUI } from "./UI/ModuleSelectUI.js";
 import { InstanceChooser } from "./UI/InstanceChooser.js";
@@ -34,7 +34,6 @@ import { FileUploadUI } from "./UI/FileUploadUI.js";
 
 
 var app = new App();
-export var moduleRepo = new ModuleRepo();
 
 
 var saveInstanceUseCase = new SaveInstanceUseCase({ app });
@@ -145,8 +144,12 @@ moduleRepo.loadModule("/User/Modules/AudioController.js");
 moduleRepo.loadModule("/User/Modules/PlayPauseControlUI.js");
 moduleRepo.loadModule("/User/Modules/CRUDUI.js")
 moduleRepo.loadModule("/User/Modules/AnythingRepo.js")
-moduleRepo.loadModule("/User/Modules/OrdererdListItem.js");
-moduleRepo.loadModule("/User/Modules/OrdererdListItemEnd.js");
+moduleRepo.loadModule("/User/Modules/OrderedListItem.js");
+moduleRepo.loadModule("/User/Modules/OrderedListItemEnd.js");
+moduleRepo.loadModule("/User/Modules/CruddableController.js");
+moduleRepo.loadModule("/User/Modules/ToDoItemService.js");
+moduleRepo.loadModule("/User/Modules/UpdateToDoListItemUI.js");
+moduleRepo.loadModule("/User/Modules/ReadInitiator.js");
 
 
 sidePanelManager.changeToApp();
@@ -159,10 +162,12 @@ document.getElementById("addInstanceButton").addEventListener("click", () => { c
 
 document.getElementById("autoDependency").addEventListener("click", () => { autoDependencyController.all(); });
 
-moduleRepo.allowAllLoadedCall();
 
-var debug = () => {
-    debugger;
+var preLoad = new URLSearchParams(new URL(window.location.href).search).get("o");
+if(preLoad){
+    moduleRepo.registerOnAllLoaded(()=>{
+        fetch("/User/AppConfigs/"+preLoad).then(r=>r.text()).then(d=>{
+            appController.import(preLoad,d,false);
+        })
+    });
 }
-
-document.getElementById("debugBreak").addEventListener("click", debug);

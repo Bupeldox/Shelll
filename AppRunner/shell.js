@@ -1,9 +1,9 @@
-import { ModuleRepo } from "../ModuleRepo.js";
+import { moduleRepo } from "../ModuleRepo.js";
 
 class InjectDependencyUseCase{
     execute(targetInstance,dependencyInstance,targetProperty){
         targetInstance[targetProperty] = dependencyInstance;
-        targetInstance.onDependencySet();
+        targetInstance.onDependencySet?.();
     }
 }
 
@@ -24,29 +24,23 @@ class AppGraphLoader{
             var source = instanceMap[e.toName];
             this.injectDependencyUseCase.execute(target,source,e.fromProperty);
         });
+
+        for(var i in instanceMap){
+            instanceMap[i].onGraphComplete?.();
+        }
     }
 }
 
 
 try{
-    let moduleRepo = new ModuleRepo();
     let injectDependencyUseCase = new InjectDependencyUseCase();
     let appLoader = new AppGraphLoader({moduleRepo,injectDependencyUseCase});
 
 
-
-    moduleRepo.loadModule("/User/Modules/HtmlContext.js");
-    moduleRepo.loadModule("/User/Modules/RootContainer.js");
-    moduleRepo.loadModule("/User/Modules/CenterLayout.js");
-    moduleRepo.loadModule("/User/Modules/AudioLoader.js");
-    moduleRepo.loadModule("/User/Modules/AudioController.js");
-    moduleRepo.loadModule("/User/Modules/PlayPauseControlUI.js");
-
-    moduleRepo.allowAllLoadedCall();
-
     window.appLoader = appLoader;
 
-    import("/User/AppConfigs/FakePhoneCallsPlayer.json", { with: { type: "json" } }).then(d=>{
+    var preLoad = new URLSearchParams(new URL(window.location.href).search).get("o");
+    import("/User/AppConfigs/"+preLoad, { with: { type: "json" } }).then(d=>{
         moduleRepo.registerOnAllLoaded(()=>{
             appLoader.load(d.default);
         })    

@@ -27,7 +27,7 @@ export default{
     Dependencies:[],
     module:AnythingRepo,
     Interface:{
-        name:"IRepo",
+        name:"IRepoV0",
         functions:[
             {name:"add",param:["any"]},
             {name:"getAll",param:false},

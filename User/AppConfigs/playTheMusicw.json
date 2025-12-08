@@ -1,0 +1,58 @@
+{
+  "nodes": [
+    {
+      "name": "LoadTheAudio-0.9811217283237426",
+      "typeName": "LoadTheAudio"
+    },
+    {
+      "name": "Audio Controller-0.29255822706509793",
+      "typeName": "Audio Controller"
+    },
+    {
+      "name": "PlayPauseControlUI-0.6189586500792605",
+      "typeName": "PlayPauseControlUI"
+    },
+    {
+      "name": "Html Document-0.6592545243660816",
+      "typeName": "Html Document"
+    },
+    {
+      "name": "RootElement-0.7626015048424353",
+      "typeName": "RootElement"
+    }
+  ],
+  "edges": [
+    {
+      "fromName": "LoadTheAudio-0.9811217283237426",
+      "toName": "Audio Controller-0.29255822706509793",
+      "fromProperty": "loadable"
+    },
+    {
+      "fromName": "Audio Controller-0.29255822706509793",
+      "toName": "PlayPauseControlUI-0.6189586500792605",
+      "fromProperty": "ui"
+    },
+    {
+      "fromName": "Audio Controller-0.29255822706509793",
+      "toName": "Html Document-0.6592545243660816",
+      "fromProperty": "document"
+    },
+    {
+      "fromName": "PlayPauseControlUI-0.6189586500792605",
+      "toName": "RootElement-0.7626015048424353",
+      "fromProperty": "container"
+    },
+    {
+      "fromName": "PlayPauseControlUI-0.6189586500792605",
+      "toName": "Audio Controller-0.29255822706509793",
+      "fromProperty": "playController"
+    },
+    {
+      "fromName": "PlayPauseControlUI-0.6189586500792605",
+      "toName": "Html Document-0.6592545243660816",
+      "fromProperty": "document"
+    }
+  ],
+  "name": "playTheMusicw",
+  "description": "wefwef"
+}
