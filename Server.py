@@ -13,6 +13,7 @@ import fcntl
 import termios
 import signal
 import mimetypes
+from uuid import uuid1
 
 
 WEBSOCKET_PATH = "/websocket"
@@ -192,6 +193,9 @@ class Server:
 
         #TODO: break if no parts available
         parts = request_str.split('\r\n\r\n')
+        if parts[0]=="":
+            client_socket.shutdown(0)
+            return
 
         raw_headers = parts[0]
         raw_body = parts[1]
@@ -207,6 +211,8 @@ class Server:
         elif path.split("/")[1] == GET_IN_DIR_PATH:
             dir = path.split("/")[2];
             self.process_getFilesInDirRequest(client_socket, dir)
+        elif path.split("/")[1] == "uploadAppConfig":
+            self.process_save_appConfig(client_socket,parts[3])
         else:
             file_path = self.get_file_path(path)
             self.process_file_request(client_socket, file_path)
@@ -221,6 +227,9 @@ class Server:
         output += data
 
         client_socket.send(output)
+    def send_ok(self,client_socket):
+        output = "HTTP/1.1 {} {}\r\n".format(200, "ok")
+        client_socket.send(output.encode())
 
     def get_file_path(self, path):
         file_path = path[1:]
@@ -235,6 +244,34 @@ class Server:
         jsonString = json.dumps(dir)
         print(jsonString)
         self.send_response(client_socket, 200, 'OK', "application/json", jsonString.encode("utf8"))
+
+
+    def is_valid_json(filename):
+        """Check if the file is a valid JSON file."""
+        try:
+            with open(filename, 'r') as f:
+                json.load(f)  # Try to load the file as JSON
+            return True
+        except (json.JSONDecodeError, FileNotFoundError):
+            return False
+    
+    def process_save_appConfig(self,client_socket,content):
+        
+        # Receive data and write it to a file
+        fileDir = "./User/AppConfigs/"
+        filename = str(uuid1())+'.json'
+        with open(fileDir+filename, 'wb') as f:
+            f.write(str.encode(content.split("\r\n")[0]))#
+            
+            # while True:
+            #     data = client_socket.recv(1024)  # Buffer size of 1024 bytes
+            #     if not data:  # If there's no more data
+            #         break
+            #     f.write(data)
+
+        self.send_ok(client_socket)
+        print('File received and saved as "{}"'.format(filename))
+
 
 
 def signal_handler(sig, frame):

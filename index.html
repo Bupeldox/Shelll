@@ -1,28 +1,37 @@
 <style>
     .appConfig {
-        display: block;
         padding: 0.25rem 0.5rem;
     }
+
 </style>
     <div>
         <a href="AppEditor/index.html">New App / Editor</a>
     </div>
 
-    <div id="appsList">
+    <table id="appsList">
 
-    </div>
+    </table>
 
     <div id="templates" style="display:none;">
-        <div class="appConfig">
-            <span class="name"></span>
-            <a class="edit">Edit</a>
-            <a class="run">Run</a>
-     </div>
+        <table>
+            <tr class="appConfig">
+                <td>
+                    <span class="name"></span>
+                </td>
+                <td>
+                    <span class="date"></span>
+                </td>
+                <td>
+                    <a class="edit">Edit</a>
+                    <a class="run">Run</a>
+                </td>
+            </tr>
+        </table>
     </div>
     <script>
         class TemplatedHtml {
             constructor(templateClassName) {
-                var templateElement = document.querySelector("#templates ." + templateClassName);
+                var templateElement = document.querySelector("#templates ." + templateClassName+", "+"#templates table ." + templateClassName);
                 this.element = templateElement.cloneNode(true);
             }
             getElement(elClassName) {
@@ -62,17 +71,24 @@
             }
             fetch("/inDir/AppConfigs").then(r => r.json()).then(dirs => {
                 dirs.map(fileName => {
-                    var el = new TemplatedHtml("appConfig");
-
-                    el.setText("name", fileName);
+                    let el = new TemplatedHtml("appConfig");
+                    
                     el.getElement("edit").href = "AppEditor/index.html?o=" + fileName;
                     el.getElement("run").href = "AppRunner/shell.html?o=" + fileName;
-
+                    fetch("/User/AppConfigs/"+fileName).then(r=>r.json()).then(d=>{
+                        el.setText("name", d.name);
+                        if(d.createdDate){
+                            el.setText("date", new Date(d.createdDate).toLocaleString());
+                        }
+                    })
                     document.getElementById("appsList").append(el.element);
                 });
 
             });
-        })
+        });
+        function loadConfig(name){
+
+        }
 
     </script>
 </div>

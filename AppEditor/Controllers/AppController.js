@@ -4,6 +4,7 @@ export class AppController {
         importAppUseCase,
         resetAppUseCase,
         jSONDownloader,
+        textFileUploader,
         instancesDisplayUI,
         sidePanelManager,
         appUI
@@ -12,7 +13,8 @@ export class AppController {
         this.importAppUseCase = importAppUseCase;
         this.resetAppUseCase = resetAppUseCase;
 
-        this.jSONDownloader = jSONDownloader;  
+        this.jSONDownloader = jSONDownloader;
+        this.textFileUploader = textFileUploader;
         this.instancesDisplayUI = instancesDisplayUI;
         this.sidePanelManager = sidePanelManager;
         this.appUI = appUI;
@@ -42,4 +44,14 @@ export class AppController {
         var exportedApp = this.exportAppUseCase.execute();
         this.jSONDownloader.download(exportedApp.name,exportedApp);
     }
+    serverSave(){
+        var exportedApp = this.exportAppUseCase.execute();
+
+        this.textFileUploader.upload("/uploadAppConfig",exportedApp.name+".json",JSON.stringify(exportedApp),"application/json",()=>{
+            alert("uploaded")
+        });
+    }
 }
+
+
+

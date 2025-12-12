@@ -5,7 +5,7 @@ export class ResetAppUseCase {
     }
     execute() {
         this.app.instances = [];
-        this.app.name = "";
-        this.app.description = "";
+        this.app.name = "App Name";
+        this.app.description = "App Description";
     }
 }

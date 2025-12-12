@@ -29,6 +29,7 @@ import { ExportAppUseCase } from "./UseCases/ExportAppUseCase.js";
 import { JSONDownloader } from "./UI/JSONDownloader.js";
 import { AppUI } from "./UI/AppUI.js";
 import { FileUploadUI } from "./UI/FileUploadUI.js";
+import { TextFileUploader } from "./Controllers/TextFileUploader.js";
 
 //Dependency Injection Start
 
@@ -59,6 +60,7 @@ var sidePanelManager = new SidePanelManager({
     appInfoElement: document.getElementById("appInfoPanel"),
     instanceInfoElement: document.getElementById("instanceInfoPanel")
 });
+var textFileUploader = new TextFileUploader();
 var jSONDownloader = new JSONDownloader();
 var appUI = new AppUI({app});
 
@@ -109,6 +111,7 @@ var appController = new AppController({
     resetAppUseCase,
     exportAppUseCase,
     jSONDownloader,
+    textFileUploader,
     instancesDisplayUI,
     sidePanelManager,
     appUI
@@ -134,24 +137,6 @@ saveInstanceUseCase.sidePanelManager = sidePanelManager;
 
 //Glue Start
 
-
-
-moduleRepo.loadModule("/User/Modules/HtmlContext.js");
-moduleRepo.loadModule("/User/Modules/RootContainer.js");
-moduleRepo.loadModule("/User/Modules/CenterLayout.js");
-moduleRepo.loadModule("/User/Modules/AudioLoader.js");
-moduleRepo.loadModule("/User/Modules/AudioController.js");
-moduleRepo.loadModule("/User/Modules/PlayPauseControlUI.js");
-moduleRepo.loadModule("/User/Modules/CRUDUI.js")
-moduleRepo.loadModule("/User/Modules/AnythingRepo.js")
-moduleRepo.loadModule("/User/Modules/OrderedListItem.js");
-moduleRepo.loadModule("/User/Modules/OrderedListItemEnd.js");
-moduleRepo.loadModule("/User/Modules/CruddableController.js");
-moduleRepo.loadModule("/User/Modules/ToDoItemService.js");
-moduleRepo.loadModule("/User/Modules/UpdateToDoListItemUI.js");
-moduleRepo.loadModule("/User/Modules/ReadInitiator.js");
-
-
 sidePanelManager.changeToApp();
 
 new FileUploadUI((fileName,content)=>{ appController.import(fileName,content); });
@@ -162,12 +147,18 @@ document.getElementById("addInstanceButton").addEventListener("click", () => { c
 
 document.getElementById("autoDependency").addEventListener("click", () => { autoDependencyController.all(); });
 
+document.getElementById("saveToServer").addEventListener("click",()=>{appController.serverSave();});
 
 var preLoad = new URLSearchParams(new URL(window.location.href).search).get("o");
 if(preLoad){
+    console.log("register on loaded")
     moduleRepo.registerOnAllLoaded(()=>{
+        console.log("running on loaded");
         fetch("/User/AppConfigs/"+preLoad).then(r=>r.text()).then(d=>{
             appController.import(preLoad,d,false);
         })
     });
+}else{
+    resetAppUseCase.execute();
+    appUI.update();
 }

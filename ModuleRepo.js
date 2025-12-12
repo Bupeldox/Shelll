@@ -12,6 +12,7 @@ class ModuleRepo {
         return this.modules.filter(i=>i.interface.name == interfaceName);
     }
     loadModule(src) {
+        
         this._notLoaded[src] = 1;
         import(src).then(m => {
             m = m.default;
@@ -30,10 +31,12 @@ class ModuleRepo {
             this.modules.push(module);
             
             delete this._notLoaded[src];
+            
             this._onLoad()
         });
     }
     allowAllLoadedCall(){
+        
         this._allowAllLoadedCall = true;
         this._onLoad();
     }
@@ -45,10 +48,11 @@ class ModuleRepo {
         return this.modules;
     }
     _onLoad(){
-        if(!this.allowAllLoadedCall){
+        if(!this._allowAllLoadedCall){
             return;
         }
-        if(Object.keys(this._notLoaded).length != 0){
+        var modulesNotLoaded = Object.keys(this._notLoaded);
+        if(modulesNotLoaded.length != 0){
             return;
         }
         this.onAllLoadedCall.map(i=>i());
@@ -69,3 +73,6 @@ fetch("/inDir/Modules").then(r=>r.json()).then(dirs=>{
     moduleRepo.allowAllLoadedCall();
 });
 
+
+
+window.moduleRepo = moduleRepo;

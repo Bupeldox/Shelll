@@ -23,6 +23,7 @@ export class ExportAppUseCase {
                 exportedApp.edges.push(edge);
             });
         });
+        exportedApp.createdDate = Date().toString();
         return exportedApp;
     }
 }

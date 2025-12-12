@@ -111,6 +111,7 @@
                     <button id="export">Export</button>
                 </p>
                 <input type="file" id="import" name="filename"></input>
+                <button id="saveToServer">Save to server</button>
             </div>
             <div class="instanceInfo contentPadding" id="instanceInfoPanel">
                 <h2>Instance Info</h2>
@@ -147,7 +148,7 @@
                     <button id="addInstanceButton">Add Instance</button>
                     <button id="autoDependency">Auto Fill Dependencies</button>
                 </div>
-                <div id="instancesDisplay"></div>
+                <div id="instancesDisplay" style="display:flex; flex-flow:row wrap; gap:1rem;"></div>
             </div>
         </div>
     </div>
@@ -182,8 +183,8 @@
                 <button class="injectionAuto">Auto</button>
                 <button class="injectionCreate">Create Instance</button>
             </div>
+            <div class="chosenInstanceContainer col contentItemMargin"></div>
             <div class="contentItemMargin chosenInstance">
-                <div class="chosenInstanceContainer col"></div>
                 <button class="removeCurrentInstance">Change/Remove</button>
             </div>
         </div>
@@ -196,7 +197,7 @@
                 <input type="radio" class="moduleInstanceRadio" name="newInstanceModule" value="toSet" id="toSet">
             </div>
         </label>
-        <div class="instanceSmallDisplay floating roundCorners contentPadding contentItemMargin">
+        <div class="instanceSmallDisplay floating roundCorners contentPadding">
             <div class="instanceName"></div>
             <div class="instanceModule"></div>
             <div class="instanceInterface"></div>
