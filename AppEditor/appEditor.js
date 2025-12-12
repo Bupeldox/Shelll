@@ -29,7 +29,7 @@ import { ExportAppUseCase } from "./UseCases/ExportAppUseCase.js";
 import { JSONDownloader } from "./UI/JSONDownloader.js";
 import { AppUI } from "./UI/AppUI.js";
 import { FileUploadUI } from "./UI/FileUploadUI.js";
-import { TextFileUploader } from "./Controllers/TextFileUploader.js";
+import { AppUploader } from "./Controllers/AppUploader.js";
 
 //Dependency Injection Start
 
@@ -60,7 +60,7 @@ var sidePanelManager = new SidePanelManager({
     appInfoElement: document.getElementById("appInfoPanel"),
     instanceInfoElement: document.getElementById("instanceInfoPanel")
 });
-var textFileUploader = new TextFileUploader();
+var appUploader = new AppUploader();
 var jSONDownloader = new JSONDownloader();
 var appUI = new AppUI({app});
 
@@ -102,7 +102,7 @@ var autoDependencyController = new AutoDependencyController({
 })
 
 
-var importAppUseCase = new ImportAppUseCase({createInstanceUseCase,setInjectionToInstanceUseCase,moduleRepo,getAllInstancesUseCase});
+var importAppUseCase = new ImportAppUseCase({app,createInstanceUseCase,setInjectionToInstanceUseCase,moduleRepo,getAllInstancesUseCase});
 var resetAppUseCase = new ResetAppUseCase({app});
 var exportAppUseCase = new ExportAppUseCase({app});
 
@@ -111,7 +111,7 @@ var appController = new AppController({
     resetAppUseCase,
     exportAppUseCase,
     jSONDownloader,
-    textFileUploader,
+    appUploader,
     instancesDisplayUI,
     sidePanelManager,
     appUI
@@ -148,6 +148,7 @@ document.getElementById("addInstanceButton").addEventListener("click", () => { c
 document.getElementById("autoDependency").addEventListener("click", () => { autoDependencyController.all(); });
 
 document.getElementById("saveToServer").addEventListener("click",()=>{appController.serverSave();});
+document.getElementById("saveToServerAndRun").addEventListener("click",()=>{appController.serverSaveAndRun();});
 
 var preLoad = new URLSearchParams(new URL(window.location.href).search).get("o");
 if(preLoad){
@@ -156,6 +157,7 @@ if(preLoad){
         console.log("running on loaded");
         fetch("/User/AppConfigs/"+preLoad).then(r=>r.text()).then(d=>{
             appController.import(preLoad,d,false);
+            appController.currentAppFile=preLoad;
         })
     });
 }else{

@@ -1,9 +1,20 @@
-<style>
-    .appConfig {
-        padding: 0.25rem 0.5rem;
-    }
+<!DOCTYPE html>
+<html lang="en">
 
-</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+
+    <style>
+        .appConfig {
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
     <div>
         <a href="AppEditor/index.html">New App / Editor</a>
     </div>
@@ -28,10 +39,11 @@
             </tr>
         </table>
     </div>
+    </div>
     <script>
         class TemplatedHtml {
             constructor(templateClassName) {
-                var templateElement = document.querySelector("#templates ." + templateClassName+", "+"#templates table ." + templateClassName);
+                var templateElement = document.querySelector("#templates ." + templateClassName + ", " + "#templates table ." + templateClassName);
                 this.element = templateElement.cloneNode(true);
             }
             getElement(elClassName) {
@@ -66,29 +78,65 @@
         }
 
         document.addEventListener("readystatechange", () => {
-            if(document.readyState != "complete"){
+            if (document.readyState != "complete") {
                 return;
             }
             fetch("/inDir/AppConfigs").then(r => r.json()).then(dirs => {
+                var appConfigElements = [];
+                var canDone = false;
+                var tryDone = () => {
+                    if (!canDone) {
+                        return
+                    }
+                    var thing = appConfigElements.filter(i => !i.loaded).length == 0;
+                    if (!thing) {
+                        return;
+                    }
+                    appConfigElements
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map(i => {
+                        document
+                        .getElementById("appsList")
+                        .append(i.th.element);
+                    });
+                };
                 dirs.map(fileName => {
                     let el = new TemplatedHtml("appConfig");
+                    let t = {
+                        th: el,
+                        date: false,
+                        loaded: false
+                    };
                     
+                    appConfigElements.push(t);
+
                     el.getElement("edit").href = "AppEditor/index.html?o=" + fileName;
                     el.getElement("run").href = "AppRunner/shell.html?o=" + fileName;
-                    fetch("/User/AppConfigs/"+fileName).then(r=>r.json()).then(d=>{
+
+                    fetch("User/AppConfigs/" + fileName).then(r => r.json()).then(d => {
                         el.setText("name", d.name);
-                        if(d.createdDate){
+                        if (d.createdDate) {
                             el.setText("date", new Date(d.createdDate).toLocaleString());
                         }
-                    })
-                    document.getElementById("appsList").append(el.element);
+                        t.date = d.createdDate
+                        t.loaded = true;
+                        tryDone();
+                    });
                 });
+
+                canDone = true;
+                tryDone();
 
             });
         });
-        function loadConfig(name){
+        function loadConfig(name) {
 
         }
 
     </script>
-</div>
+
+
+
+</body>
+
+</html>

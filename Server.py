@@ -5,6 +5,8 @@ import os
 import hashlib
 import base64
 import time
+import re
+from datetime import datetime
 
 import json
 import ctypes
@@ -212,7 +214,7 @@ class Server:
             dir = path.split("/")[2];
             self.process_getFilesInDirRequest(client_socket, dir)
         elif path.split("/")[1] == "uploadAppConfig":
-            self.process_save_appConfig(client_socket,parts[3])
+            self.process_save_appConfig(client_socket,parts[2])
         else:
             file_path = self.get_file_path(path)
             self.process_file_request(client_socket, file_path)
@@ -227,8 +229,8 @@ class Server:
         output += data
 
         client_socket.send(output)
-    def send_ok(self,client_socket):
-        output = "HTTP/1.1 {} {}\r\n".format(200, "ok")
+    def send_response_code(self,client_socket,code):
+        output = "HTTP/1.1 {} {}\r\n".format(code, "")
         client_socket.send(output.encode())
 
     def get_file_path(self, path):
@@ -246,22 +248,39 @@ class Server:
         self.send_response(client_socket, 200, 'OK', "application/json", jsonString.encode("utf8"))
 
 
-    def is_valid_json(filename):
+    def is_valid_json(self,content):
         """Check if the file is a valid JSON file."""
         try:
-            with open(filename, 'r') as f:
-                json.load(f)  # Try to load the file as JSON
-            return True
-        except (json.JSONDecodeError, FileNotFoundError):
+            thing = json.loads(content)  # Try to load the file as JSON
+            return thing
+        except (json.JSONDecodeError):
             return False
     
+    def sanitize_filename(self,filename):
+        # Define a regex pattern to match unwanted characters
+        safe_pattern = r'[<>:"/\\|?*\x00-\x1F~()+ ]'
+        
+        # Replace unwanted characters with an empty string
+        sanitized_filename = re.sub(safe_pattern, '', filename)
+        return sanitized_filename
+    
     def process_save_appConfig(self,client_socket,content):
+        jsonString = content.split("\r\n")[0]
+        data = self.is_valid_json(jsonString)
+        if(data == False):
+            self.send_response_code(client_socket,401)
+            return
         
         # Receive data and write it to a file
         fileDir = "./User/AppConfigs/"
-        filename = str(uuid1())+'.json'
-        with open(fileDir+filename, 'wb') as f:
-            f.write(str.encode(content.split("\r\n")[0]))#
+
+        dt = datetime.strptime(data["createdDate"].split(" (")[0], "%a %b %d %Y %H:%M:%S GMT%z")
+        dateStr = dt.strftime("%y%m%d%H%M%S")
+
+        fileName = self.sanitize_filename(data["name"]+dateStr)+".json"
+        fileUri = fileDir+fileName
+        with open(fileUri, 'wb') as f:
+            f.write(str.encode(jsonString))#
             
             # while True:
             #     data = client_socket.recv(1024)  # Buffer size of 1024 bytes
@@ -269,8 +288,8 @@ class Server:
             #         break
             #     f.write(data)
 
-        self.send_ok(client_socket)
-        print('File received and saved as "{}"'.format(filename))
+        self.send_response(client_socket,200,"OK","application/json","{{\"filename\":\"{}\"}}".format(fileName).encode())
+        print('File received and saved as "{}"'.format(fileUri))
 
 
 

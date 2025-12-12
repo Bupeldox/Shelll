@@ -4,7 +4,7 @@ export class AppController {
         importAppUseCase,
         resetAppUseCase,
         jSONDownloader,
-        textFileUploader,
+        appUploader,
         instancesDisplayUI,
         sidePanelManager,
         appUI
@@ -14,7 +14,7 @@ export class AppController {
         this.resetAppUseCase = resetAppUseCase;
 
         this.jSONDownloader = jSONDownloader;
-        this.textFileUploader = textFileUploader;
+        this.appUploader = appUploader;
         this.instancesDisplayUI = instancesDisplayUI;
         this.sidePanelManager = sidePanelManager;
         this.appUI = appUI;
@@ -39,18 +39,31 @@ export class AppController {
         this.instancesDisplayUI.update();
         this.sidePanelManager.changeToApp();
         this.appUI.update();
-    }
+}
     export() {
         var exportedApp = this.exportAppUseCase.execute();
         this.jSONDownloader.download(exportedApp.name,exportedApp);
     }
-    serverSave(){
+    serverSave(cb){
         var exportedApp = this.exportAppUseCase.execute();
-
-        this.textFileUploader.upload("/uploadAppConfig",exportedApp.name+".json",JSON.stringify(exportedApp),"application/json",()=>{
-            alert("uploaded")
+        
+        this.appUploader.upload("/uploadAppConfig",JSON.stringify(exportedApp),"application/json",(d)=>{
+            
+            this.currentAppFile = d.filename;
+            alert("uploaded"+d.filename);
         });
     }
+    serverSaveAndRun(){
+        if(this.currentAppFile){
+            window.location.href="/AppRunner/shell.html?o="+this.currentAppFile;
+        }else{
+            this.appUploader.upload("/uploadAppConfig",JSON.stringify(exportedApp),"application/json",(d)=>{
+                this.currentAppFile = d.filename;
+                window.location.href="/AppRunner/shell.html?o="+this.currentAppFile;
+            });
+        }
+    }
+
 }
 
 

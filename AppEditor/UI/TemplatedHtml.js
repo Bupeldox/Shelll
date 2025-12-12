@@ -1,7 +1,17 @@
 export default class TemplatedHtml{
     constructor(templateClassName){
+        if(!templateClassName){
+            return;
+        }
         var templateElement = document.querySelector("#templates ."+templateClassName);
         this.element = templateElement.cloneNode(true);
+    }
+    static FromHTMLString(hs){
+        var element = document.createElement("div");
+        element.outerHTML = hs;
+        var th = new TemplatedHtml();
+        th.element = element;
+        return th;
     }
     getElement(elClassName){
         return this.element.querySelector("."+elClassName);

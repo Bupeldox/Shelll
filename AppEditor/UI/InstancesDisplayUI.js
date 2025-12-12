@@ -11,7 +11,7 @@ export class InstancesDisplayUI {
     }
     update() {
         var instances = this.getAllInstancesUseCase.execute(); //should probs go through controller but not worth it.
-
+        
         instances.map(i => {
             if (!this.UIMap.has(i)) {
                 let item = new SmallInstanceDisplay(i);

@@ -1,10 +1,11 @@
 
 class CRUDUI {
-    constructor({cruddable, document, container}) {
+    constructor({cruddable, document, container, uiFactory}) {
         this.items = [];
         this.cruddable = cruddable;
         this.document = document;
         this.container = container;
+        this.uiFactory = uiFactory;
     }
     display(items){
         this._createContainer();
@@ -32,7 +33,7 @@ class CRUDUI {
     }
     _createElement(item,id){
         var html = `<div>
-    <div class="textContainer"></div>
+    <div class="displayContainer"></div>
     <div>
         <button class="editButton">Edit</button>
         <button class="deleteButton">Delete</button>
@@ -40,11 +41,14 @@ class CRUDUI {
 </div>`;
         var container = this.document.createElement("div");
         container.innerHTML = html;
-        var textContainer = container.querySelector(".textContainer");
+        var displayContainer = container.querySelector(".displayContainer");
         var editButton = container.querySelector(".editButton");
         var deleteButton = container.querySelector(".deleteButton");
 
-        textContainer.textContent = item.name;
+        var itemUI = this.uiFactory.createUI(displayContainer);
+        
+        itemUI.display(item);
+
 
         editButton.addEventListener("click",()=>{this._onEditItem(id)});
         deleteButton.addEventListener("click",()=>{this._onDeleteItem(id)});
@@ -70,6 +74,15 @@ export default {
                     {name:"create",params:false},
                     {name:"update",params:["any"]},
                     {name:"delete",params:["any"]},
+                ]
+            }
+        },
+        {
+            name:"uiFactory",
+            interface:{
+                name:"IUIFactory",
+                function:[
+                    {name:"createUI", params:["container"], returns:"IUI"},
                 ]
             }
         },
