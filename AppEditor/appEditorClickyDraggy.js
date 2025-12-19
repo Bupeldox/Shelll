@@ -30,6 +30,8 @@ import { JSONDownloader } from "./UI/JSONDownloader.js";
 import { AppUI } from "./UI/AppUI.js";
 import { FileUploadUI } from "./UI/FileUploadUI.js";
 import { AppUploader } from "./Controllers/AppUploader.js";
+import HandleDragPan from "./UI/DraggingGui/DragPanHandler.js";
+import { DragInjectionController } from "./UI/DraggingGui/InstancesUINodes.js";
 
 //Dependency Injection Start
 
@@ -158,9 +160,15 @@ if(preLoad){
         fetch("/User/AppConfigs/"+preLoad).then(r=>r.text()).then(d=>{
             appController.import(preLoad,d,false);
             appController.currentAppFile=preLoad;
+            dragUiController.createUI();
         })
     });
 }else{
     resetAppUseCase.execute();
     appUI.update();
 }
+
+
+const dragUiController  = new DragInjectionController({getAllInstancesUseCase,container:document.querySelector(".transformCanvas")});
+const dragPanHandler = HandleDragPan({controller:dragUiController});
+dragUiController.dragPanHandler = dragPanHandler;

@@ -1,4 +1,4 @@
-import { moduleRepo } from "../ModuleRepo.js";
+import { moduleRepo } from "../Shared/ModuleRepo.js";
 
 class InjectDependencyUseCase{
     execute(targetInstance,dependencyInstance,targetProperty){

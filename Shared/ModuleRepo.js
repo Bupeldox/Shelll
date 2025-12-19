@@ -1,4 +1,4 @@
-import { Module } from "./AppEditor/Models/Module.js";
+import { Module } from "../AppEditor/Models/Module.js";
 
 class ModuleRepo {
     constructor() {
@@ -15,23 +15,29 @@ class ModuleRepo {
         
         this._notLoaded[src] = 1;
         import(src).then(m => {
-            m = m.default;
-            m.src = src;
-            
-            if (this.modules.some(i => i.name == m.name)) {
-                return;
-            }
-            
-            var module = new Module();
-            module.name = m.name;
-            module.dependencies = m.Dependencies;
-            module.interface = m.Interface;
-            module.module = m.module;
+            try{
 
-            this.modules.push(module);
-            
+                m = m.default;
+                m.src = src;
+                
+                if (this.modules.some(i => i.name == m.name)) {
+                    return;
+                }
+                
+                var module = new Module();
+                module.name = m.name;
+                module.dependencies = m.Dependencies;
+                module.interface = m.Interface;
+                module.module = m.module;
+                
+                this.modules.push(module);
+                
+            }catch{
+                
+            }
+
             delete this._notLoaded[src];
-            
+                
             this._onLoad()
         });
     }
